@@ -3,7 +3,7 @@ import pickle
 
 class CommsProtocol:
     types = {
-        "update": "update",
+        "initialize": "initialize",
     }
     som = "%%%"  # Start of message key
     sod = "$$$"  # Start of data key
@@ -48,6 +48,6 @@ class Encoder:
         string = CommsProtocol.som  # Add start of msg (som)
         string += msg_type  # Add type string
         string += CommsProtocol.sod  # Add start of data (sod)
-        string += str(data)  # Add data
+        string += data  # Add data
         string += CommsProtocol.eom  # Add end of msg (eom)
         return bytes(string, "utf-8")

@@ -5,8 +5,8 @@ import select
 import traceback
 
 # TODO: Fix paths
-from comms_protocol import Message, CommsProtocol, Decoder
-from client import TestClass
+from .comms_protocol import Message, CommsProtocol, Decoder
+from .client import TestClass
 
 
 class Server(Thread):

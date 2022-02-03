@@ -2,7 +2,7 @@ from multiprocessing import Process
 import socket
 import traceback
 
-from comms_protocol import Message, CommsProtocol, Decoder, Encoder
+from .comms_protocol import Message, CommsProtocol, Decoder, Encoder
 
 
 class Client:
@@ -49,5 +49,7 @@ class TestClass:
 
 if __name__ == "__main__":
     """Test the use of the Client() class, send execute message and TestClass"""
+    from src.robot.state import State
+    q = State()
     c = Client()
-    c.send_message(CommsProtocol.types["update"], TestClass())
+    c.send_message(CommsProtocol.types["initialize"], q)
