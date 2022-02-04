@@ -33,43 +33,51 @@ class Bot(BaseAgent):
         pass
 
     def initialize_agent(self):
-        print("TEST0!")
-        s = Server(CommsProtocol.SERVER, CommsProtocol.PORT)
-        print("TEST1!")
-    
-        waiting = True
-        while waiting:
-            try:
-                #TODO: Run GUI here. On button push, client should send the message (do that within GUI functions)
-                q = State()
-                c = Client()
-                c.send_message(CommsProtocol.types["initialize"], q())
-                
-                msg = s.msg_queue.get()
-                # msg is not passing a class
-                self.q = msg.data
-                print(f"Initialized state: {self.q()}")
-                waiting = False
-
-            except:
-                traceback.print_exc()
-                break
+        self.modify_game_state()
         
-        # TODO: fill this with state information from the GUI
-        car_state = CarState(
-            boost_amount=87,
-            physics=Physics(
-                location=Vector3(x=100, y=100, z=100),
-                rotation=Rotator(0, 0, 0),
-                angular_velocity=Vector3(0, 0, 0),
-            ),
-        )
-        ball_state = BallState(Physics(location=Vector3(0, 0, None)))
-        game_info_state = GameInfoState(game_speed=1)
-        game_state = GameState(
-            ball=ball_state, cars={self.index: car_state}, game_info=game_info_state
-        )
-        self.set_game_state(game_state)
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
-        pass
+        if(self.flag == True):
+            self.set_game_state(self.game_state)
+        self.flag = False
+
+        return SimpleControllerState()
+
+    def modify_game_state(self):
+        s = Server(CommsProtocol.SERVER, CommsProtocol.PORT)
+         #TODO: Run GUI here. On button push, client should send the message (do that within GUI functions)
+        c = Client()
+        try:
+           
+            #### REMOVE ####
+            q = State()
+            c.send_message(CommsProtocol.types["initialize_state"], np.array2string(q()))
+            #### REMOVE ####
+            
+            msg = s.msg_queue.get()
+            # msg is not passing a class
+        
+        except:
+            traceback.print_exc()
+
+        if msg.type == "initialize state":
+            self.q = np.fromstring(msg.data)
+            # TODO: Convert to Euler 
+            car_state = CarState(
+                boost_amount=100,
+                physics=Physics(
+                    location=Vector3(self.q.x, self.q.y, self.q.z),
+                    velocity=Vector3(self.q.x_dot, self.q.y_dot, self.q.z_dot),
+                    rotation=Rotator(0, 0, 0), # TODO: Take state values
+                    angular_velocity=Vector3(self.q.phi_dot, self.q.theta_dot, self.q.psi_dot),
+                ),
+            )
+            ball_state = BallState(Physics(location=Vector3(0, 0, None)))
+            game_info_state = GameInfoState(game_speed=1)
+            self.game_state = GameState(
+                ball=ball_state, cars={self.index: car_state}, game_info=game_info_state
+            )
+            
+            self.flag = True
+        
+

@@ -54,3 +54,23 @@ class State:
                 self.psi_dot,
             ]
         )
+
+    """
+    Updates the state with an array, rather than with
+    individual state parameters.
+    """
+
+    def update_with_array(self, state_array):
+        self.x = state_array[0]
+        self.y = state_array[1]
+        self.z = state_array[2]
+        self.x_dot = state_array[3]
+        self.y_dot = state_array[4]
+        self.z_dot = state_array[5]
+        self.e0 = state_array[6]
+        self.e1 = state_array[7]
+        self.e2 = state_array[8]
+        self.e3 = state_array[9]
+        self.phi_dot = state_array[10]
+        self.theta_dot = state_array[11]
+        self.psi_dot = state_array[12]
