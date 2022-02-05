@@ -4,8 +4,8 @@ sys.path.append('C:/Users/Student/Documents/RLBot_IS/trajectory-optimization')
 
 import math
 import traceback
+import numpy as np
 
-"""RLBot Imports"""
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.utils.structures.game_data_struct import GameTickPacket
 from rlbot.utils.game_state_util import (
@@ -19,49 +19,37 @@ from rlbot.utils.game_state_util import (
 )
 
 #TODO: Fix paths
-"""Comms Imports"""
 from src.communications.comms_protocol import CommsProtocol
 from src.communications.server import Server
 from src.communications.client import Client
 
-"""Dynamics Imports"""
 from state import State
 
 class Bot(BaseAgent):
     def __init__(self, name, team, index):
         super().__init__(name, team, index)
-        pass
+        self.initialized = False
+        self.q = State()
 
     def initialize_agent(self):
-        self.modify_game_state()
+        self.s = Server(CommsProtocol.SERVER, CommsProtocol.PORT)
         
-
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
-        if(self.flag == True):
-            self.set_game_state(self.game_state)
-        self.flag = False
-
+        if not self.s.msg_queue.empty():
+            self.modify_game_state()
+        
         return SimpleControllerState()
 
     def modify_game_state(self):
-        s = Server(CommsProtocol.SERVER, CommsProtocol.PORT)
-         #TODO: Run GUI here. On button push, client should send the message (do that within GUI functions)
-        c = Client()
+        print("Modifying game state")
         try:
-           
-            #### REMOVE ####
-            q = State()
-            c.send_message(CommsProtocol.types["initialize_state"], np.array2string(q()))
-            #### REMOVE ####
-            
-            msg = s.msg_queue.get()
-            # msg is not passing a class
+            msg = self.s.msg_queue.get()
         
         except:
             traceback.print_exc()
 
         if msg.type == "initialize state":
-            self.q = np.fromstring(msg.data)
+            self.q.update_with_array(np.fromstring(msg.data.strip('[]'), count = 13, sep = ' '))
             # TODO: Convert to Euler 
             car_state = CarState(
                 boost_amount=100,
@@ -78,6 +66,10 @@ class Bot(BaseAgent):
                 ball=ball_state, cars={self.index: car_state}, game_info=game_info_state
             )
             
-            self.flag = True
+            self.set_game_state(self.game_state)
+
+            self.initialized = True
+            
+
         
 
