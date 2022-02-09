@@ -1,0 +1,36 @@
+import numpy as np
+from pyquaternion import Quaternion
+
+
+omega_max = 5.5
+T_r = -36.07956616966136 # torque coefficient for roll
+T_p = -12.14599781908070 # torque coefficient for pitch
+T_y =   8.91962804287785 # torque coefficient for yaw
+D_r =  -4.47166302201591 # drag coefficient for roll
+D_p = -2.798194258050845 # drag coefficient for pitch
+D_y = -1.886491900437232 # drag coefficient for yaw
+
+def get_quaternion_from_euler(roll, pitch, yaw):
+        qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+        qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
+        qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
+        qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+       
+        return [qx, qy, qz, qw]
+    
+class model:
+    def ariel(self,roll, pitch, yaw, thrust):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.x_dot = x_dot
+        self.y_dot = y_dot
+        self.z_dot = z_dot
+        self.e0 = e0
+        self.e1 = e1
+        self.e2 = e2
+        self.e3 = e3
+        self.phi_dot = phi_dot
+        self.theta_dot = theta_dot
+        self.psi_dot = psi_dot
+    

@@ -13,22 +13,6 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="Save">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>270</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
   <widget class="QLineEdit" name="lineEdit">
    <property name="geometry">
     <rect>
@@ -120,19 +104,6 @@
     <string>0</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_8">
-   <property name="geometry">
-    <rect>
-     <x>60</x>
-     <y>280</y>
-     <width>113</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>0</string>
-   </property>
-  </widget>
   <widget class="QLineEdit" name="lineEdit_7">
    <property name="geometry">
     <rect>
@@ -146,7 +117,7 @@
     <string>0</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_9">
+  <widget class="QLineEdit" name="lineEdit_8">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -159,7 +130,7 @@
     <string>0</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_10">
+  <widget class="QLineEdit" name="lineEdit_11">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -172,7 +143,7 @@
     <string>0</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_11">
+  <widget class="QLineEdit" name="lineEdit_9">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -185,7 +156,7 @@
     <string>0</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_12">
+  <widget class="QLineEdit" name="lineEdit_10">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -198,7 +169,7 @@
     <string>0</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_13">
+  <widget class="QLineEdit" name="lineEdit_12">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -289,7 +260,7 @@
     <string>Vel Z</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_8">
+  <widget class="QLabel" name="label_10">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -302,7 +273,7 @@
     <string>Yaw</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_9">
+  <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -315,7 +286,7 @@
     <string>Roll</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_10">
+  <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -328,7 +299,7 @@
     <string>Pitch</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_11">
+  <widget class="QLabel" name="label_13">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -338,10 +309,10 @@
     </rect>
    </property>
    <property name="text">
-    <string>c</string>
+    <string>Yaw rate</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_12">
+  <widget class="QLabel" name="label_11">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -351,10 +322,10 @@
     </rect>
    </property>
    <property name="text">
-    <string>a</string>
+    <string>Roll Rate</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_13">
+  <widget class="QLabel" name="label_12">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -364,56 +335,23 @@
     </rect>
    </property>
    <property name="text">
-    <string>b</string>
+    <string>Pitch Rate</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_14">
+  <widget class="QPushButton" name="sendButton">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>280</y>
-     <width>47</width>
-     <height>21</height>
+     <x>310</x>
+     <y>260</y>
+     <width>75</width>
+     <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>d</string>
+    <string>Send State</string>
    </property>
   </widget>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>Save</sender>
-   <signal>accepted()</signal>
-   <receiver>Dialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>Save</sender>
-   <signal>rejected()</signal>
-   <receiver>Dialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
