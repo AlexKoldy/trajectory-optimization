@@ -1,6 +1,7 @@
-#TODO: Fix paths
+# TODO: Fix paths
 import sys
-sys.path.append('C:/Users/Student/Documents/RLBot_IS/trajectory-optimization')
+
+sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
 
 import numpy as np
 
@@ -10,9 +11,11 @@ from src.communications.client import Client
 from src.communications.comms_protocol import CommsProtocol
 from src.utilities.utils import euler_to_quaternion
 
+
 class StateGUI(Ui_Dialog):
     def __init__(self):
         pass
+
     def setupUi(self, Dialog):
         super().setupUi(Dialog)
 
@@ -49,7 +52,8 @@ class StateGUI(Ui_Dialog):
                 psi_dot=psi_dot,
             )
             c = Client()
-            c.send_message(CommsProtocol.types["initialize state"], np.array2string(q()))      
-            
-        self.sendButton.clicked.connect(send_initial_state)
+            c.send_message(
+                CommsProtocol.types["initialize state"], np.array2string(q())
+            )
 
+        self.sendButton.clicked.connect(send_initial_state)

@@ -13,7 +13,7 @@ class State:
         e0=0,  # quaternion 0
         e1=0,  # quaternion 1
         e2=0,  # quaternion 2
-        e3=0,  # quaternion 3
+        e3=1,  # quaternion 3
         phi_dot=0,  # roll rate [rad/s]
         theta_dot=0,  # pitch rate [rad/s]
         psi_dot=0,  # yaw rate [rad/s]
@@ -32,11 +32,10 @@ class State:
         self.theta_dot = theta_dot
         self.psi_dot = psi_dot
 
-    """
-	Return entire state as 1D numpy array
-	"""
-
     def __call__(self):
+        """
+        Return entire state as 1D numpy array
+        """
         return np.array(
             [
                 self.x,
@@ -55,12 +54,11 @@ class State:
             ]
         )
 
-    """
-    Updates the state with an array, rather than with
-    individual state parameters.
-    """
-
     def update_with_array(self, state_array):
+        """
+        Updates the state with an array, rather than with
+        individual state parameters.
+        """
         self.x = state_array[0]
         self.y = state_array[1]
         self.z = state_array[2]
