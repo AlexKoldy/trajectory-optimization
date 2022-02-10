@@ -8,6 +8,7 @@ from gui import Ui_Dialog
 from src.robot.state import State
 from src.communications.client import Client
 from src.communications.comms_protocol import CommsProtocol
+from src.utilities.utils import euler_to_quaternion
 
 class StateGUI(Ui_Dialog):
     def __init__(self):
@@ -16,6 +17,9 @@ class StateGUI(Ui_Dialog):
         super().setupUi(Dialog)
 
         def send_initial_state():
+            """
+            Sends the initial state specified in the GUI via the client
+            """
             x = float(self.lineEdit.text())
             y = float(self.lineEdit_2.text())
             z = float(self.lineEdit_3.text())
@@ -28,20 +32,7 @@ class StateGUI(Ui_Dialog):
             phi_dot = float(self.lineEdit_10.text())
             theta_dot = float(self.lineEdit_11.text())
             psi_dot = float(self.lineEdit_12.text())
-            print(x)
-            print(y)
-            print(z)
-            print(x_dot)
-            print(y_dot)
-            print(z_dot)
-            print(phi)
-            print(theta)
-            print(psi)
-            print(phi_dot)
-            print(theta_dot)
-            print(psi_dot)
-            #e0, e1, e2, e3 = blah blah
-            '''
+            e0, e1, e2, e3 = euler_to_quaternion(phi=phi, theta=theta, psi=psi)
             q = State(
                 x=x,
                 y=y,
@@ -57,9 +48,8 @@ class StateGUI(Ui_Dialog):
                 theta_dot=theta_dot,
                 psi_dot=psi_dot,
             )
-            
             c = Client()
             c.send_message(CommsProtocol.types["initialize state"], np.array2string(q()))      
-            ''' 
+            
         self.sendButton.clicked.connect(send_initial_state)
 
