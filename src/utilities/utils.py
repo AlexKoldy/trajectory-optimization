@@ -83,3 +83,62 @@ def quaternion_to_rotation(e0: float, e1: float, e2: float, e3: float) -> np.arr
     R = np.array([[r_00, r_01, r_02], [r_10, r_11, r_12], [r_20, r_21, r_22]])
 
     return R
+
+
+def quat_multiply(quat_0: np.array, quat_1: np.array) -> np.array:
+    """
+    Multiples two quaternions
+
+    Args:
+        quat_0 (np.array): first quaternion
+        quat_1 (np.array): second quaternion
+
+    Returns:
+        quat_2 (np.array): multplied quaternion
+    """
+    x_0 = quat_0[0]
+    y_0 = quat_0[1]
+    z_0 = quat_0[2]
+    w_0 = quat_0[3]
+    x_1 = quat_1[0]
+    y_1 = quat_1[1]
+    z_1 = quat_1[2]
+    w_1 = quat_1[3]
+
+    x_2 = w_0 * x_1 + x_0 * w_1 + y_0 * z_1 - z_0 * y_1
+    y_2 = w_0 * y_1 - x_0 * z_1 + y_0 * w_1 + z_0 * x_1
+    z_2 = w_0 * z_1 + x_0 * y_1 - y_0 * x_1 + z_0 * w_1
+    w_2 = w_0 * w_1 - x_0 * x_1 - y_0 * y_1 - z_0 * z_1
+
+    quat_2 = np.array([x_2, y_2, z_2, w_2])
+
+    return quat_2
+
+
+def quat_conjugate(quat: np.array) -> np.array:
+    """
+    Gives the conjugate of a quaternion
+
+    Args:
+        quat (np.array): quaternion
+
+    Returns:
+        quat (np.array): conjugate quaternion
+    """
+    quat[0:3] = -1 * quat[0:3]
+    return quat
+
+
+def quat_normalize(quat: np.array) -> np.array:
+    """
+    Create a unit quaternion
+
+    Args:
+        quat (np.array): quaternion
+
+    Returns:
+        quat (np.array): unit quaternion
+    """
+    quat = quat / np.linalg.norm(quat)
+
+    return quat
