@@ -110,6 +110,7 @@ class Model:
         plt.show()
 
 
+"""
 q = State()
 model = Model(dt=0.05, q=q)
 u = np.array([0, 0, 2, 100])
@@ -148,3 +149,4 @@ plt.show()
 # print(model.q())
 # model.step(dt=0.1, u=np.array([0, 0, 1, 1]))
 # print(model.q())
+"""

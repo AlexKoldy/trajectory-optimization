@@ -9,7 +9,7 @@ from gui import Ui_Dialog
 from src.robot.state import State
 from src.communications.client import Client
 from src.communications.comms_protocol import CommsProtocol
-from src.utilities.utils import euler_to_quaternion
+from src.utilities.utils import LinAlgUtils as lau
 
 
 class StateGUI(Ui_Dialog):
@@ -35,7 +35,7 @@ class StateGUI(Ui_Dialog):
             phi_dot = float(self.lineEdit_10.text())
             theta_dot = float(self.lineEdit_11.text())
             psi_dot = float(self.lineEdit_12.text())
-            e0, e1, e2, e3 = euler_to_quaternion(phi=phi, theta=theta, psi=psi)
+            e0, e1, e2, e3 = lau.euler_to_quaternion(phi=phi, theta=theta, psi=psi)
             q = State(
                 x=x,
                 y=y,
