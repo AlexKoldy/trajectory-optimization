@@ -54,10 +54,13 @@ class State:
             ]
         )
 
-    def update_with_array(self, state_array):
+    def update_with_array(self, state_array: np.array):
         """
         Updates the state with an array, rather than with
         individual state parameters.
+
+        Args:
+            state_aray (np.array): array representing state
         """
         self.x = state_array[0]
         self.y = state_array[1]

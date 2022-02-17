@@ -5,12 +5,7 @@ sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
 import numpy as np
 
 from src.robot.state import State
-from src.utilities.utils import (
-    quaternion_to_rotation,
-    quat_multiply,
-    quat_conjugate,
-    quat_normalize,
-)
+from src.utilities.utils import LinAlgUtils as lau
 from src.utilities.integrators import get_integrator
 
 
@@ -47,20 +42,31 @@ class Model:
         self.intg = get_integrator(dt=self.dt, model=self.q_dot)
 
     def q_dot(self, q: np.array, u: np.array) -> np.array:
+        """
+        Calculate derivative of state for prediction
+
+        Args:
+            q (np.array): state
+            u (np.array): torque and boost inputs
+
+        Returns:
+            q_dot (np.array): state derivative
+        """
         p = q[:3]  # position of bot in world frame [uu]
         v = q[3:6]  # velocity of bot in world frame [uu/s]
         quat = q[6:10]  # quaternion describing bot's orientation
         omega = q[10:]  # angular velocity of bot in body frame [rad/s]
 
-        quat = quat_normalize(quat)
+        quat = lau.quat_normalize(quat)
 
-        omega_dot = self.T @ u[:3]
-        omega = np.hstack((omega, 0))
-        quat_dot = (1 / 2) * quat_multiply(quat_0=omega, quat_1=quat)
+        omega_dot = self.T @ u[:3]  # angular acceleration [rad/s^2]
+        omega = np.hstack((omega, 0))  # convert angular velocity to vector of size 4
+        quat_dot = (1 / 2) * lau.quat_multiply(quat_0=omega, quat_1=quat)
 
         boost = np.array([u[3], 0, 0, 0])  # boost in pure quaternion form in body frame
-        boost = quat_multiply(
-            quat_0=quat_multiply(quat_0=quat, quat_1=boost), quat_1=quat_conjugate(quat)
+        boost = lau.quat_multiply(
+            quat_0=lau.quat_multiply(quat_0=quat, quat_1=boost),
+            quat_1=lau.quat_conjugate(quat),
         )  # boost in pure quaternion form in world frame
         boost = boost[0:3]
         v_dot = boost + self.g  # acceleration of car in world frame [uu/s^2]
@@ -85,9 +91,13 @@ class Model:
         )
 
     def step(self, u: np.array):
-        self.q.update_with_array(self.intg.step(x=self.q(), u=u))
+        """
+        Predicts state at next timestep
 
-        # print(f"State: {self.q()}")
+        Args:
+            u (np.array): torque and boost inputs
+        """
+        self.q.update_with_array(self.intg.step(x=self.q(), u=u))
 
     def plot(self, t_history: list, x_history: list, y_history: list, z_history: list):
         import matplotlib.pyplot as plt
