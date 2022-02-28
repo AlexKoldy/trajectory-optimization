@@ -101,7 +101,6 @@ class Bot(BaseAgent):
                 np.fromstring(msg.data.strip("[]"), count=13, sep=" ")
             )
             self.model.q = self.q
-            # TODO: Convert to Euler
             phi, theta, psi = lau.quaternion_to_euler(
                 e0=self.q.e0, e1=self.q.e1, e2=self.q.e2, e3=self.q.e3
             )

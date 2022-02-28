@@ -8,13 +8,13 @@ import numpy as np
 from gui import Ui_Dialog
 from src.robot.state import State
 from src.communications.client import Client
-from src.communications.comms_protocol import CommsProtocol
+from src.communications.comms_protocol import CommsProtocol, Message
 from src.utilities.utils import LinAlgUtils as lau
 
 
 class StateGUI(Ui_Dialog):
     def __init__(self):
-        pass
+        self.c = Client()
 
     def setupUi(self, Dialog):
         super().setupUi(Dialog)
@@ -51,9 +51,7 @@ class StateGUI(Ui_Dialog):
                 theta_dot=theta_dot,
                 psi_dot=psi_dot,
             )
-            c = Client()
-            c.send_message(
-                CommsProtocol.types["initialize state"], np.array2string(q())
-            )
+            msg = Message(CommsProtocol.types["initialize state"], np.array2string(q()))
+            self.c.gui_msg_queue.put(msg)
 
         self.sendButton.clicked.connect(send_initial_state)
