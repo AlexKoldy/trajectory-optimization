@@ -46,16 +46,16 @@ class LinAlgUtils:
         """
         t0 = +2.0 * (e3 * e0 + e1 * e2)
         t1 = +1.0 - 2.0 * (e0 * e0 + e1 * e1)
-        phi = np.atan2(t0, t1)
+        phi = np.arctan2(t0, t1)
 
         t2 = +2.0 * (e3 * e1 - e2 * e0)
         t2 = +1.0 if t2 > +1.0 else t2
         t2 = -1.0 if t2 < -1.0 else t2
-        theta = np.asin(t2)
+        theta = np.arcsin(t2)
 
         t3 = +2.0 * (e3 * e2 + e0 * e1)
         t4 = +1.0 - 2.0 * (e1 * e1 + e2 * e2)
-        psi = np.atan2(t3, t4)
+        psi = np.arctan2(t3, t4)
 
         return [phi, theta, psi]
 

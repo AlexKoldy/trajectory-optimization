@@ -90,6 +90,7 @@ class Model:
             dtype=np.float32,
         )
 
+    # Same direction of when I update magnitude cannot exceed 5.5
     def step(self, u: np.array):
         """
         Predicts state at next timestep
@@ -98,55 +99,3 @@ class Model:
             u (np.array): torque and boost inputs
         """
         self.q.update_with_array(self.intg.step(x=self.q(), u=u))
-
-    def plot(self, t_history: list, x_history: list, y_history: list, z_history: list):
-        import matplotlib.pyplot as plt
-
-        plt.figure()
-        plt.plot(t_history, x_history, label="x")
-        plt.plot(t_history, y_history, label="y")
-        plt.plot(t_history, z_history, label="z")
-        plt.legend()
-        plt.show()
-
-
-"""
-q = State()
-model = Model(dt=0.05, q=q)
-u = np.array([0, 0, 2, 100])
-t_history = []
-t_history.append(0)
-x_history = []
-x_history.append(model.q.x)
-y_history = []
-y_history.append(model.q.y)
-z_history = []
-z_history.append(model.q.z)
-t = 0
-
-for num_timesteps in range(100):
-    model.step(u)
-    t += 0.05
-    t_history.append(t)
-    x_history.append(model.q.x)
-    y_history.append(model.q.y)
-    z_history.append(model.q.z)
-
-# model.plot(
-#   t_history=t_history, x_history=x_history, y_history=y_history, z_history=z_history
-# )
-
-import matplotlib.pyplot as plt
-
-plt.figure()
-plt.plot(t_history, x_history, label="x")
-plt.plot(t_history, y_history, label="y")
-plt.plot(t_history, z_history, label="z")
-plt.ylim(0, 100)
-plt.legend()
-plt.show()
-
-# print(model.q())
-# model.step(dt=0.1, u=np.array([0, 0, 1, 1]))
-# print(model.q())
-"""

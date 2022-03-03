@@ -38,6 +38,8 @@ class Bot(BaseAgent):
         self.dt = 1 / 120
         self.model = Model(dt=self.dt, q=copy.deepcopy(self.q))
         self.history = History()
+        self.saved = False
+        self.initialized = False
 
     def initialize_agent(self):
         self.s = Server(CommsProtocol.SERVER, CommsProtocol.PORT)
@@ -46,25 +48,23 @@ class Bot(BaseAgent):
         if not self.s.msg_queue.empty():
             self.modify_game_state()
 
-        self.get_state()
-
-        if t < 10:
-            self.history.append_many_with_array(
-                t=self.t, q=self.q(), q_m=self.model.q()
-            )
+        if self.initialized:
+            self.get_state()
+            if self.t < 20:
+                self.history.append_many_with_array(
+                    t=self.t, q=self.q(), q_m=self.model.q()
+                )
+            elif not self.saved:
+                self.saved = self.history.save()
+            controls = SimpleControllerState()
+            controls.boost = True
+            controls.ptich = 0
+            u = np.array([0, 0, 0, 992])
+            self.model.step(u=u)
+            self.t += self.dt
+            return controls
         else:
-            self.history.plot()
-
-        controls = SimpleControllerState()
-        controls.boost = True
-        controls.ptich = -1
-
-        u = np.array([0, -12.46, 0, 992])
-        self.model.step(u=u)
-
-        self.t += self.dt
-
-        return SimpleControllerState()
+            return SimpleControllerState
 
     def get_state(self):
         """
@@ -89,7 +89,6 @@ class Bot(BaseAgent):
         """
         Modifies game state
         """
-        print("Modifying game state")
         try:
             msg = self.s.msg_queue.get()
 
@@ -100,7 +99,7 @@ class Bot(BaseAgent):
             self.q.update_with_array(
                 np.fromstring(msg.data.strip("[]"), count=13, sep=" ")
             )
-            self.model.q = self.q
+            self.model.q = copy.deepcopy(self.q)
             phi, theta, psi = lau.quaternion_to_euler(
                 e0=self.q.e0, e1=self.q.e1, e2=self.q.e2, e3=self.q.e3
             )

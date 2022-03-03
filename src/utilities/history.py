@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
 
 
 class History:
@@ -69,33 +67,33 @@ class History:
         Appends all simulation variables at once
 
         Args:
-                                                                        t (float): time [s]
-                                                                        x (float): x-position of bot [uu]
-                                                                        y (float): y-position of bot [uu]
-                                                                        z (float): z-position of zbot [uu]
-                                                                        x_dot (float): x-velocity of bot [uu]
-                                                                        y_dot (float): y-velocity of bot [uu]
-                                                                        z_dot (float): z-position of bot [uu]
-                                                                        e0 (float): x-quaternion of bot
-                                                                        e1 (float): y-quaternion of bot
-                                                                        e2 (float): z-quaternion of bot
-                                                                        e3 (float): w-quaternion of bot
-                                                                        phi_dot (float): roll rate of bot [rad/s]
-                                                                        theta_dot (float): pitch rate of bot [rad/s]
-                                                                        psi_dot (float): yaw rate of bot [rad/s]
-                                                                        x_m (float): x-position of model [uu]
-                                                                        y_m (float): y-position of model [uu]
-                                                                        z_m (float): z-position of model [uu]
-                                                                        x_dot_m (float): x-velocity of model [uu]
-                                                                        y_dot_m (float): y-velocity of model [uu]
-                                                                        z_dot_m (float): z-position of model [uu]
-                                                                        e0_m (float): x-quaternion of model
-                                                                        e1_m (float): y-quaternion of model
-                                                                        e2_m (float): z-quaternion of model
-                                                                        e3_m (float): w-quaternion of model
-                                                                        phi_dot_m (float): roll rate of model [rad/s]
-                                                                        theta_dot_m (float): pitch rate of model [rad/s]
-                                                                        psi_dot_m (float): yaw rate of model [rad/s]
+            t (float): time [s]
+            x (float): x-position of bot [uu]
+            y (float): y-position of bot [uu]
+            z (float): z-position of zbot [uu]
+            x_dot (float): x-velocity of bot [uu]
+            y_dot (float): y-velocity of bot [uu]
+            z_dot (float): z-position of bot [uu]
+            e0 (float): x-quaternion of bot
+            e1 (float): y-quaternion of bot
+            e2 (float): z-quaternion of bot
+            e3 (float): w-quaternion of bot
+            phi_dot (float): roll rate of bot [rad/s]
+            theta_dot (float): pitch rate of bot [rad/s]
+            psi_dot (float): yaw rate of bot [rad/s]
+            x_m (float): x-position of model [uu]
+            y_m (float): y-position of model [uu]
+            z_m (float): z-position of model [uu]
+            x_dot_m (float): x-velocity of model [uu]
+            y_dot_m (float): y-velocity of model [uu]
+            z_dot_m (float): z-position of model [uu]
+            e0_m (float): x-quaternion of model
+            e1_m (float): y-quaternion of model
+            e2_m (float): z-quaternion of model
+            e3_m (float): w-quaternion of model
+            phi_dot_m (float): roll rate of model [rad/s]
+            theta_dot_m (float): pitch rate of model [rad/s]
+            psi_dot_m (float): yaw rate of model [rad/s]
         """
         self.t_history.append(t)
 
@@ -132,9 +130,9 @@ class History:
         Appends all simulation variables at once using arrays
 
         Args:
-                                        t (float): time [s]
-                                        q (np.array): bot's state
-                                        q_m (np.array): model's state
+            t (float): time [s]
+            q (np.array): bot's state
+            q_m (np.array): model's state
         """
         self.t_history.append(t)
 
@@ -166,33 +164,61 @@ class History:
         self.theta_dot_m_history.append(q_m[11] * 180 / np.pi)
         self.psi_dot_m_history.append(q_m[12] * 180 / np.pi)
 
-    def plot(self):
-        plt.figure()
-        plt.plot(self.t_history, self.x_history, color="red", label="x_bot")
-        plt.plot(self.t_history, self.y_history, color="green", label="y_bot")
-        plt.plot(self.t_history, self.z_history, color="blue", label="z_bot")
+    def save(self):
+        """
+        Saves history data to csv file
 
-        plt.plot(
+        Returns:
+            True
+        """
+        save_list = [
             self.t_history,
             self.x_history,
-            color="red",
-            linestyle="dashed",
-            label="x_model",
-        )
-        plt.plot(
-            self.t_history,
-            self.x_history,
-            color="green",
-            linestyle="dashed",
-            label="x_model",
-        )
-        plt.plot(
-            self.t_history,
-            self.x_history,
-            color="blue",
-            linestyle="dashed",
-            label="x_model",
+            self.y_history,
+            self.z_history,
+            self.x_dot_history,
+            self.y_dot_history,
+            self.z_dot_history,
+            self.e0_history,
+            self.e1_history,
+            self.e2_history,
+            self.e3_history,
+            self.phi_dot_history,
+            self.theta_dot_history,
+            self.psi_dot_history,
+            self.x_m_history,
+            self.y_m_history,
+            self.z_m_history,
+            self.x_dot_m_history,
+            self.y_dot_m_history,
+            self.z_dot_m_history,
+            self.e0_m_history,
+            self.e1_m_history,
+            self.e2_m_history,
+            self.e3_m_history,
+            self.phi_dot_m_history,
+            self.theta_dot_m_history,
+            self.psi_dot_m_history,
+        ]
+        np.savetxt(
+            "C:/Users/Student/Documents/RLBot_IS/trajectory-optimization/data/data.csv",
+            save_list,
+            delimiter=", ",
+            fmt="% s",
         )
 
-        plt.legend()
-        plt.show()
+        return True
+
+    def load(self):
+        """
+        Loads history data from csv file
+
+        Returns:
+            load_data (List): all history data originally saved to csv
+        """
+        load_data = np.genfromtxt(
+            "C:/Users/Student/Documents/RLBot_IS/trajectory-optimization/data/data.csv",
+            delimiter=",",
+        )
+
+        return load_data
