@@ -35,6 +35,8 @@ class StateGUI(Ui_Dialog):
             phi_dot = float(self.lineEdit_10.text())
             theta_dot = float(self.lineEdit_11.text())
             psi_dot = float(self.lineEdit_12.text())
+            # g = float(self.lineEdit_12.text())
+
             e0, e1, e2, e3 = lau.euler_to_quaternion(phi=phi, theta=theta, psi=psi)
             q = State(
                 x=x,

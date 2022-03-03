@@ -50,21 +50,24 @@ class Bot(BaseAgent):
 
         if self.initialized:
             self.get_state()
-            if self.t < 20:
+            if self.t < 7:
                 self.history.append_many_with_array(
                     t=self.t, q=self.q(), q_m=self.model.q()
                 )
-            elif not self.saved:
+            else:
                 self.saved = self.history.save()
+                print("Ready to plot!")
+                self.initialized = False
+                self.t = 0
             controls = SimpleControllerState()
             controls.boost = True
-            controls.ptich = 0
-            u = np.array([0, 0, 0, 992])
+            controls.pitch = 1
+            u = np.array([0, 1, 0, 992])
             self.model.step(u=u)
             self.t += self.dt
             return controls
         else:
-            return SimpleControllerState
+            return SimpleControllerState()
 
     def get_state(self):
         """

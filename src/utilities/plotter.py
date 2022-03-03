@@ -43,32 +43,67 @@ class Plotter(History):
 
     def __call__(self):
         plt.figure()
-        plt.plot(self.t_history, self.x_history, color="red", label="x_bot")
-        plt.plot(self.t_history, self.y_history, color="green", label="y_bot")
-        plt.plot(self.t_history, self.z_history, color="blue", label="z_bot")
+        plt.plot(self.t_history, self.e0_history, color="red", label="e0_bot")
+        plt.plot(self.t_history, self.e1_history, color="green", label="e1_bot")
+        plt.plot(self.t_history, self.e2_history, color="blue", label="e2_bot")
+        plt.plot(self.t_history, self.e3_history, color="black", label="e3_bot")
         plt.plot(
             self.t_history,
-            self.x_m_history,
+            self.e0_m_history,
             color="red",
             linestyle="dashed",
-            label="x_model",
+            label="e0_model",
         )
         plt.plot(
             self.t_history,
-            self.y_m_history,
+            self.e1_m_history,
             color="green",
             linestyle="dashed",
-            label="y_model",
+            label="e1_model",
         )
         plt.plot(
             self.t_history,
-            self.z_m_history,
+            self.e2_m_history,
             color="blue",
             linestyle="dashed",
-            label="z_model",
+            label="e2_model",
         )
-        plt.xlim(5.25, 10)
-        plt.ylim(0, 1000)
+        plt.plot(
+            self.t_history,
+            self.e3_m_history,
+            color="black",
+            linestyle="dashed",
+            label="e3_model",
+        )
+        plt.ylim(-1, 1)
+        plt.legend()
+        plt.show()
+
+        plt.figure()
+        plt.plot(self.t_history, self.phi_dot_history, color="green", label="phi")
+        plt.plot(self.t_history, self.theta_dot_history, color="blue", label="theta")
+        plt.plot(self.t_history, self.psi_dot_history, color="black", label="psi")
+        plt.plot(
+            self.t_history,
+            self.phi_dot_m_history,
+            color="green",
+            linestyle="dashed",
+            label="model phi",
+        )
+        plt.plot(
+            self.t_history,
+            self.theta_dot_m_history,
+            color="blue",
+            linestyle="dashed",
+            label="model theta",
+        )
+        plt.plot(
+            self.t_history,
+            self.psi_dot_m_history,
+            color="black",
+            linestyle="dashed",
+            label="model psi",
+        )
         plt.legend()
         plt.show()
 

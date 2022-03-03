@@ -1,4 +1,10 @@
+import sys
+
+sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
+
 import numpy as np
+
+from src.utilities.utils import LinAlgUtils as lau
 
 
 class State:
@@ -62,16 +68,20 @@ class State:
         Args:
             state_aray (np.array): array representing state
         """
+        quat = np.array(
+            [state_array[6], state_array[7], state_array[8], state_array[9]]
+        )
+        quat = lau.quat_normalize((quat))
         self.x = state_array[0]
         self.y = state_array[1]
         self.z = state_array[2]
         self.x_dot = state_array[3]
         self.y_dot = state_array[4]
         self.z_dot = state_array[5]
-        self.e0 = state_array[6]
-        self.e1 = state_array[7]
-        self.e2 = state_array[8]
-        self.e3 = state_array[9]
+        self.e0 = quat[0]
+        self.e1 = quat[1]
+        self.e2 = quat[2]
+        self.e3 = quat[3]
         self.phi_dot = state_array[10]
         self.theta_dot = state_array[11]
         self.psi_dot = state_array[12]

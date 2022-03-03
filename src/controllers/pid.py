@@ -14,9 +14,9 @@ class PID:
         Sets PID constants to new values. For tuning purposes only
 
         Args:
-            k_p (float): new proportional constant
-            k_i (float): new integral constant
-            k_d (float): new derivative constant
+            k_p (float): new proportional constant (optional)
+            k_i (float): new integral constant (optional)
+            k_d (float): new derivative constant (optional)
         """
         if k_p:
             self.k_p = k_p
@@ -36,17 +36,12 @@ class PID:
         Returns:
             u (np.array): input
         """
-        if not self.x_prev:
+        if not self.x_prev:  # for first step only
             self.x_prev = x
-
-        e = x_des - x
-        if not self.e_prev:
+        e = x_des - x  # error
+        if not self.e_prev:  # for first step only
             self.e_prev = e
-
-        self.e_sum += e * self.dt
-
-        e_dot = (e - self.e_prev) / self.dt
-
-        u = self.k_p * e + self.k_i * self.e_sum * self.k_d * e_dot
-
+        self.e_sum += e * self.dt  # integral of error
+        e_dot = (e - self.e_prev) / self.dt  # derivative of error
+        u = self.k_p * e + self.k_i * self.e_sum * self.k_d * e_dot  # PID formula
         return u

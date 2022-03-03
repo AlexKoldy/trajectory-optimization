@@ -46,5 +46,19 @@ class Cascaded_PID:
         self.outer_pid.set_constants(k_p=k_p_outer, k_i=k_i_outer, k_d=k_d_outer)
 
     def step(self, x_des: np.array, x: np.array, x_dot: np.array) -> np.array:
-        x_dot_des = self.outer_pid(x_des=x_des, x=x)
+        """
+        Determines input to plant
+
+        Args:
+            x_des (np.array): desired behavior
+            x (np.array): current behavior
+            x_dot (np.array): current behavior's velocity
+
+        Returns:
+            u (np.array): input
+        """
+        x_dot_des = self.outer_pid(
+            x_des=x_des, x=x
+        )  # get desired velocity of behavior to feed to inner loop
         u = self.inner_pid(x_des=x_dot_des, x=x_dot)
+        return u

@@ -25,17 +25,6 @@ class Model:
             dtype=np.float32,
         )
 
-        """
-        self.D = np.array(
-            [
-                [self.D_phi, 0, 0],
-                [0, self.D_theta * (1 - np.abs(u[1])), 0],
-                [0, 0, self.D_psi * (1 - np.abs(u[2]))],
-            ],
-            dtype=np.float32,
-        )
-        """
-
         self.g = np.array([0, 0, -660])  # gravity in world frame [uu/s^2]
 
         self.dt = dt  # timestep [s]
@@ -58,8 +47,15 @@ class Model:
         omega = q[10:]  # angular velocity of bot in body frame [rad/s]
 
         quat = lau.quat_normalize(quat)
-
-        omega_dot = self.T @ u[:3]  # angular acceleration [rad/s^2]
+        D = np.array(
+            [
+                [self.D_phi, 0, 0],
+                [0, self.D_theta * (1 - np.abs(u[1])), 0],
+                [0, 0, self.D_psi * (1 - np.abs(u[2]))],
+            ],
+            dtype=np.float32,
+        )
+        omega_dot = self.T @ u[:3] + D @ omega  # angular acceleration [rad/s^2]
         omega = np.hstack((omega, 0))  # convert angular velocity to vector of size 4
         quat_dot = (1 / 2) * lau.quat_multiply(quat_0=omega, quat_1=quat)
 
@@ -91,6 +87,7 @@ class Model:
         )
 
     # Same direction of when I update magnitude cannot exceed 5.5
+    # Add drag
     def step(self, u: np.array):
         """
         Predicts state at next timestep
@@ -98,4 +95,21 @@ class Model:
         Args:
             u (np.array): torque and boost inputs
         """
-        self.q.update_with_array(self.intg.step(x=self.q(), u=u))
+        q_next = self.intg.step(x=self.q(), u=u)
+        omega_next = q_next[10:]
+        omega_mag = np.linalg.norm(omega_next)
+        if omega_mag > 5.5:
+            omega_hat = omega_next / omega_mag
+            omega_hat *= 5.5
+            q_next[10:] = omega_hat[:]
+        self.q.update_with_array(q_next)
+
+
+if __name__ == "__main__":
+    q = State()
+    model = Model(dt=1 / 120, q=q)
+    t = 0
+    u = np.array([0, 0.1, 0, 992])
+    while t < 5:
+        model.step(u)
+        t += 1 / 120
