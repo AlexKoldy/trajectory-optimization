@@ -46,7 +46,6 @@ class Plotter(History):
         plt.plot(self.t_history, self.x_history, color="red", label="x_bot")
         plt.plot(self.t_history, self.y_history, color="green", label="y_bot")
         plt.plot(self.t_history, self.z_history, color="blue", label="z_bot")
-
         plt.plot(
             self.t_history,
             self.x_m_history,
@@ -54,7 +53,6 @@ class Plotter(History):
             linestyle="dashed",
             label="x_model",
         )
-
         plt.plot(
             self.t_history,
             self.y_m_history,
@@ -62,7 +60,6 @@ class Plotter(History):
             linestyle="dashed",
             label="y_model",
         )
-
         plt.plot(
             self.t_history,
             self.z_m_history,
@@ -70,7 +67,6 @@ class Plotter(History):
             linestyle="dashed",
             label="z_model",
         )
-
         plt.xlim(5.25, 10)
         plt.ylim(0, 1000)
         plt.legend()
