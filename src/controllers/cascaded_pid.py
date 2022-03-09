@@ -7,7 +7,7 @@ import numpy as np
 from src.controllers.pid import PID
 
 
-class Cascaded_PID:
+class P2:
     def __init__(
         self,
         dt: float,
@@ -57,8 +57,6 @@ class Cascaded_PID:
         Returns:
             u (np.array): input
         """
-        x_dot_des = self.outer_pid(
-            x_des=x_des, x=x
-        )  # get desired velocity of behavior to feed to inner loop
-        u = self.inner_pid(x_des=x_dot_des, x=x_dot)
+        q
+
         return u
