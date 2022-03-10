@@ -7,7 +7,7 @@ import numpy as np
 from src.controllers.pid import PID
 
 
-class P2:
+class CascadedPID:
     def __init__(
         self,
         dt: float,
@@ -57,6 +57,5 @@ class P2:
         Returns:
             u (np.array): input
         """
-        q
 
         return u

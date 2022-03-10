@@ -4,7 +4,7 @@ sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
 
 import numpy as np
 
-from src.utilities.utils import LinAlgUtils as lau
+from src.utilities.lin_alg_utils import LinAlgUtils as lau
 
 
 class State:
@@ -85,3 +85,6 @@ class State:
         self.phi_dot = state_array[10]
         self.theta_dot = state_array[11]
         self.psi_dot = state_array[12]
+
+    def quaternion(self):
+        return np.array([self.e0, self.e1, self.e2, self.e3])

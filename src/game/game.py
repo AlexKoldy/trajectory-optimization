@@ -25,6 +25,7 @@ from src.communications.comms_protocol import CommsProtocol
 from src.communications.server import Server
 from src.communications.client import Client
 from src.utilities.history import History
+from src.utilities.lin_alg_utils import LinAlgUtils as lau
 
 
 class Game(BaseAgent):
@@ -62,20 +63,17 @@ class Game(BaseAgent):
         elif self.sim_state == "RUNNING_GAME":
             q_bot, q_ball = self.get_state()  # get actual bot and ball state
             self.bot.q.update_with_array(state_array=q_bot)  # update bot's state
-            if self.t < 7:
+            if self.t < 20:
                 self.history.append_many_with_array(
                     t=self.t, q=self.bot.q(), q_m=self.bot.model.q()
                 )  # append gamestate to history
             else:
                 self.saved = self.history.save()
                 print("Ready to plot!")
-            controls = SimpleControllerState()
-            controls.boost = True
-            controls.pitch = 1
-            u = np.array([0, 1, 0, 992])
-            self.bot.model.step(u=u)
+                self.sim_state = "READY_TO_INITIALIZE"
+            quat_des = lau.euler_to_quaternion(phi=0, theta=0, psi=0)
+            controls = self.bot.step(quat_des=quat_des)
             self.t += self.dt
-            self.sim_state = "READY_TO_INITIALIZE"
             return controls
         elif self.sim_state == "MODIFYING_STATE":
             self.modify_game_state(
@@ -122,7 +120,7 @@ class Game(BaseAgent):
         """
         car_state = self.bot.set_state(q=q_bot)
         ball_state = self.ball.set_state()
-        game_info_state = GameInfoState(game_speed=1)
+        game_info_state = GameInfoState(world_gravity_z=0.00001, game_speed=1)
         self.game_state = GameState(
             ball=ball_state, cars={self.index: car_state}, game_info=game_info_state
         )

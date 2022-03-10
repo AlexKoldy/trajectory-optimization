@@ -5,7 +5,7 @@ sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
 import numpy as np
 
 from src.robot.state import State
-from src.utilities.utils import LinAlgUtils as lau
+from src.utilities.lin_alg_utils import LinAlgUtils as lau
 from src.utilities.integrators import get_integrator
 
 

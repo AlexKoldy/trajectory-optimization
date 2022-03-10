@@ -6,6 +6,7 @@ sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
 import numpy as np
 import copy
 
+from rlbot.agents.base_agent import SimpleControllerState
 from rlbot.utils.game_state_util import (
     CarState,
     Physics,
@@ -15,7 +16,8 @@ from rlbot.utils.game_state_util import (
 
 from src.robot.state import State
 from src.robot.model import Model
-from src.utilities.utils import LinAlgUtils as lau
+from src.controllers.p2 import P2
+from src.utilities.lin_alg_utils import LinAlgUtils as lau
 
 
 class Bot:
@@ -23,7 +25,7 @@ class Bot:
         self.q = State()
         self.dt = 1 / 120
         self.model = Model(dt=self.dt, q=copy.deepcopy(self.q))
-        self.initialized = False
+        self.controller = P2(dt=self.dt, P_quat=10, P_omega=0.01)
 
     def set_state(self, q: np.array) -> CarState:
         """
@@ -49,3 +51,16 @@ class Bot:
             ),
         )
         return car_state
+
+    def step(self, quat_des: np.array) -> SimpleControllerState:
+        controls = SimpleControllerState()
+        quat = self.q()[6:10]
+        omega = self.q()[10:]
+        tau = self.controller.step(quat=quat, quat_des=quat_des, omega=omega)
+        tau = tau / np.linalg.norm(tau)
+        controls.roll = tau[0]
+        controls.pitch = tau[1]
+        controls.yaw = tau[2]
+        u = np.array([tau[0], tau[1], tau[2], 0])
+        self.model.step(u=u)
+        return controls
