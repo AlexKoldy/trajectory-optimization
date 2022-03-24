@@ -10,7 +10,9 @@ class Client:
         pass
 
     def send_message(self, type, data):
-        """Send a message over the socket
+        """
+        Send a message over the socket
+
         Args:
             type ([type]): the type of message being sent (must come from the CommsProtocol class)
             data ([type]): the class or data to be sent along with the message

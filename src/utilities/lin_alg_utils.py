@@ -144,3 +144,39 @@ class LinAlgUtils:
         quat = quat / np.linalg.norm(quat)
 
         return quat
+
+    @staticmethod
+    def quat_body_to_world(quat_0: np.array, quat_1: np.array) -> np.array:
+        """
+        Converts quaternion from body frame to world frame
+
+        Args:
+            quat_0 (np.array): quaternion
+            quat_1 (np.array): quaternion
+
+        Returns:
+            quat (np.array): unit quaternion
+        """
+        quat = LinAlgUtils.quat_multiply(
+            LinAlgUtils.quat_multiply(quat_0, quat_1),
+            LinAlgUtils.quat_conjugate(quat_0),
+        )
+        return quat
+
+    @staticmethod
+    def quat_world_to_body(quat_0: np.array, quat_1: np.array) -> np.array:
+        """
+        Converts quaternion from body frame to world frame
+
+        Args:
+            quat_0 (np.array): quaternion
+            quat_1 (np.array): quaternion
+
+        Returns:
+            quat (np.array): unit quaternion
+        """
+        quat = LinAlgUtils.quat_multiply(
+            LinAlgUtils.quat_multiply(LinAlgUtils.quat_conjugate(quat_0), quat_1),
+            quat_0,
+        )
+        return quat

@@ -25,7 +25,7 @@ class Bot:
         self.q = State()
         self.dt = 1 / 120
         self.model = Model(dt=self.dt, q=copy.deepcopy(self.q))
-        self.controller = P2(dt=self.dt, P_quat=10, P_omega=0.01)
+        self.controller = P2(dt=self.dt, P_quat=100, P_omega=10)
 
     def set_state(self, q: np.array) -> CarState:
         """
@@ -57,10 +57,12 @@ class Bot:
         quat = self.q()[6:10]
         omega = self.q()[10:]
         tau = self.controller.step(quat=quat, quat_des=quat_des, omega=omega)
-        tau = tau / np.linalg.norm(tau)
-        controls.roll = tau[0]
-        controls.pitch = tau[1]
-        controls.yaw = tau[2]
-        u = np.array([tau[0], tau[1], tau[2], 0])
+        controls.roll = tau[0] / 36.07956616966136
+        controls.pitch = tau[1] / 12.14599781908070
+        controls.yaw = tau[2] / 8.91962804287785
+        controls.roll = np.clip(controls.roll, -1, 1)
+        controls.pitch = np.clip(controls.pitch, -1, 1)
+        controls.yaw = np.clip(controls.yaw, -1, 1)
+        u = np.array([controls.roll, controls.pitch, controls.yaw, 0])
         self.model.step(u=u)
         return controls

@@ -36,7 +36,12 @@ class Game(BaseAgent):
         self.t = 0  # game time [s]
         self.dt = 1 / 120  # time step [s]
         self.history = History()  # game state history
-        self.sim_state = "WAITING_TO_INITIALIZE"  # game's state machine
+        self.states = {
+            0: "WAITING_TO_INITIALIZE",
+            1: "MODIFYING_STATE",
+            2: "RUNNING_GAME",
+        }  # game's state machine
+        self.sim_state = 0
         self.saved = False
         # self.initialized = False
 
@@ -46,21 +51,41 @@ class Game(BaseAgent):
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         if not self.server.msg_queue.empty():
             try:
-                msg = self.server.msg_queue.get()
+                self.msg = self.server.msg_queue.get()
             except:
                 traceback.print_exc()
-            if msg.type == "initialize state":
-                self.sim_state = "INITIALIZING_STATE"
-            elif msg.type == "modify state":
-                self.sim_state = "MODIFYING_STATE"
-        if self.sim_state == "READY_TO_INITIALIZE":
+            if self.msg.type == "modify state":
+                self.sim_state = 1
+        if self.sim_state == 0:
             self.t = 0
-        elif self.sim_state == "INITIALIZING_STATE":
-            self.modify_game_state(
-                q_bot=np.fromstring(msg.data.strip("[]"), count=13, sep=" ")
+        elif self.sim_state == 1:
+            data = self.msg.data
+            end_locations = [
+                pos for pos, char in enumerate(data) if char == "]"
+            ]  # look for ']' character to determine the end location of stringified list
+            q_bot = np.fromstring(
+                data[: end_locations[0] + 1].strip("[]"), count=13, sep=" "
             )
-            self.sim_state = "RUNNING_GAME"
-        elif self.sim_state == "RUNNING_GAME":
+            quat_des = np.fromstring(
+                data[end_locations[0] + 1 : end_locations[1] + 1].strip("[]"),
+                count=4,
+                sep=" ",
+            )
+            controller_coefficients = np.fromstring(
+                data[: end_locations[1] + 1 : end_locations[2] + 1].strip("[]"),
+                count=2,
+                sep=" ",
+            )
+            g = float(data[end_locations[2] + 1 :])
+
+            self.modify_game_state(
+                q_bot=q_bot,
+                quat_des=quat_des,
+                g=g,
+                controller_coefficients=controller_coefficients,
+            )
+            self.sim_state = 2
+        elif self.sim_state == 2:
             q_bot, q_ball = self.get_state()  # get actual bot and ball state
             self.bot.q.update_with_array(state_array=q_bot)  # update bot's state
             if self.t < 20:
@@ -70,16 +95,10 @@ class Game(BaseAgent):
             else:
                 self.saved = self.history.save()
                 print("Ready to plot!")
-                self.sim_state = "READY_TO_INITIALIZE"
-            quat_des = lau.euler_to_quaternion(phi=0, theta=0, psi=0)
-            controls = self.bot.step(quat_des=quat_des)
+                self.sim_state = 0
+            controls = self.bot.step(quat_des=np.asarray(self.quat_des))
             self.t += self.dt
             return controls
-        elif self.sim_state == "MODIFYING_STATE":
-            self.modify_game_state(
-                np.fromstring(q_bot=msg.data.strip("[]"), count=13, sep=" ")
-            )
-
         return SimpleControllerState()
 
     def get_state(self):
@@ -104,23 +123,33 @@ class Game(BaseAgent):
         phi_dot = rbt.players[self.index].state.angular_velocity.x
         theta_dot = rbt.players[self.index].state.angular_velocity.y
         psi_dot = rbt.players[self.index].state.angular_velocity.z
-
         q_bot = np.array(
             [x, y, z, x_dot, y_dot, z_dot, e0, e1, e2, e3, phi_dot, theta_dot, psi_dot]
         )
         q_ball = None  # TODO: Fix
         return q_bot, q_ball
 
-    def modify_game_state(self, q_bot: np.array):
+    def modify_game_state(
+        self,
+        q_bot: np.array,
+        quat_des: np.array,
+        g: float,
+        controller_coefficients: np.array,
+    ):
         """
         Modifies game state
 
         Args:
             q_bot (np.array): new bot state to set
         """
+        # TODO: MAKE THIS FUNCTIONS ARGS CLEANER; EDIT DOCUMENTATION
+        self.bot.controller.set_constants(
+            P_quat=controller_coefficients[0], P_omega=controller_coefficients[1]
+        )
+        self.quat_des = quat_des
         car_state = self.bot.set_state(q=q_bot)
         ball_state = self.ball.set_state()
-        game_info_state = GameInfoState(world_gravity_z=0.00001, game_speed=1)
+        game_info_state = GameInfoState(world_gravity_z=g, game_speed=1)
         self.game_state = GameState(
             ball=ball_state, cars={self.index: car_state}, game_info=game_info_state
         )

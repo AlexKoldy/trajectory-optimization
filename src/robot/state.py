@@ -68,10 +68,16 @@ class State:
         Args:
             state_aray (np.array): array representing state
         """
+        # TODO: Convert
+
         quat = np.array(
             [state_array[6], state_array[7], state_array[8], state_array[9]]
         )
-        quat = lau.quat_normalize((quat))
+        quat = lau.quat_normalize(quat)
+        omega = np.array([state_array[10], state_array[11], state_array[12]])
+        omega = np.hstack((omega, 0))
+        omega = lau.quat_world_to_body(quat_0=quat, quat_1=omega)
+
         self.x = state_array[0]
         self.y = state_array[1]
         self.z = state_array[2]
@@ -82,9 +88,9 @@ class State:
         self.e1 = quat[1]
         self.e2 = quat[2]
         self.e3 = quat[3]
-        self.phi_dot = state_array[10]
-        self.theta_dot = state_array[11]
-        self.psi_dot = state_array[12]
+        self.phi_dot = omega[0]
+        self.theta_dot = omega[1]
+        self.psi_dot = omega[2]
 
     def quaternion(self):
         return np.array([self.e0, self.e1, self.e2, self.e3])

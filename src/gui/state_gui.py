@@ -9,7 +9,7 @@ from gui import Ui_Dialog
 from src.robot.state import State
 from src.communications.client import Client
 from src.communications.comms_protocol import CommsProtocol
-from src.utilities.utils import LinAlgUtils as lau
+from src.utilities.lin_alg_utils import LinAlgUtils as lau
 
 
 class StateGUI(Ui_Dialog):
@@ -21,24 +21,29 @@ class StateGUI(Ui_Dialog):
 
         def send_initial_state():
             """
-            Sends the initial state specified in the GUI via the client
+            Sends the game state specified in the GUI via the client
             """
-            x = float(self.lineEdit.text())
-            y = float(self.lineEdit_2.text())
-            z = float(self.lineEdit_3.text())
-            x_dot = float(self.lineEdit_4.text())
-            y_dot = float(self.lineEdit_5.text())
-            z_dot = float(self.lineEdit_6.text())
-            phi = float(self.lineEdit_7.text())
-            theta = float(self.lineEdit_8.text())
-            psi = float(self.lineEdit_9.text())
-            phi_dot = float(self.lineEdit_10.text())
-            theta_dot = float(self.lineEdit_11.text())
-            psi_dot = float(self.lineEdit_12.text())
-            # g = float(self.lineEdit_12.text())
-
+            x = float(self.x.text())
+            y = float(self.y.text())
+            z = float(self.z.text())
+            x_dot = float(self.x_dot.text())
+            y_dot = float(self.y_dot.text())
+            z_dot = float(self.z_dot.text())
+            phi = float(self.phi.text())
+            theta = float(self.theta.text())
+            psi = float(self.psi.text())
+            phi_dot = float(self.phi_dot.text())
+            theta_dot = float(self.theta_dot.text())
+            psi_dot = float(self.psi_dot.text())
+            g = float(self.g.text())
+            e0_des = float(self.e0_des.text())
+            e1_des = float(self.e1_des.text())
+            e2_des = float(self.e2_des.text())
+            e3_des = float(self.e3_des.text())
+            P_quat = float(self.P_quat.text())
+            P_omega = float(self.P_omega.text())
             e0, e1, e2, e3 = lau.euler_to_quaternion(phi=phi, theta=theta, psi=psi)
-            q = State(
+            q_bot = State(
                 x=x,
                 y=y,
                 z=z,
@@ -53,9 +58,15 @@ class StateGUI(Ui_Dialog):
                 theta_dot=theta_dot,
                 psi_dot=psi_dot,
             )
+            quat_des = np.array([e0_des, e1_des, e2_des, e3_des])
+            controller_coefficients = [P_omega, P_quat]
             c = Client()
-            c.send_message(
-                CommsProtocol.types["initialize state"], np.array2string(q())
-            )
+            data = []
+            data.append(np.array2string(q_bot()))
+            data.append(np.array2string(quat_des))
+            data.append(controller_coefficients)
+            data.append(str(g))
+            data = "".join(map(str, data))
+            c.send_message(CommsProtocol.types["modify state"], data)
 
-        self.sendButton.clicked.connect(send_initial_state)
+        self.send_button.clicked.connect(send_initial_state)

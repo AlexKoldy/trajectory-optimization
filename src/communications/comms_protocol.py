@@ -3,7 +3,7 @@ import pickle
 
 class CommsProtocol:
     types = {
-        "initialize state": "initialize state",
+        "modify state": "modify state",
     }
     som = "%%%"  # Start of message key
     sod = "$$$"  # Start of data key

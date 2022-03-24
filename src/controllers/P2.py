@@ -37,5 +37,7 @@ class P2:
         """
         quat_conj = lau.quat_conjugate(quat=quat)  # conjugate of measured quaternion
         quat_error = lau.quat_multiply(quat_0=quat_des, quat_1=quat_conj)
+        if quat_error[3] < 0:
+            quat_error *= -1
         u = -self.P_quat * quat_error[:3] - self.P_omega * omega
         return u
