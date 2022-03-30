@@ -68,8 +68,6 @@ class State:
         Args:
             state_aray (np.array): array representing state
         """
-        # TODO: Convert
-
         quat = np.array(
             [state_array[6], state_array[7], state_array[8], state_array[9]]
         )
@@ -93,4 +91,7 @@ class State:
         self.psi_dot = omega[2]
 
     def quaternion(self):
+        """
+        # TODO
+        """
         return np.array([self.e0, self.e1, self.e2, self.e3])

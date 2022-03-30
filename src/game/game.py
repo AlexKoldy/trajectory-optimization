@@ -43,7 +43,6 @@ class Game(BaseAgent):
         }  # game's state machine
         self.sim_state = 0
         self.saved = False
-        # self.initialized = False
 
     def initialize_agent(self):
         self.server = Server(CommsProtocol.SERVER, CommsProtocol.PORT)
@@ -51,12 +50,16 @@ class Game(BaseAgent):
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         if not self.server.msg_queue.empty():
             try:
+                print("0")
                 self.msg = self.server.msg_queue.get()
             except:
+                print("1")
                 traceback.print_exc()
             if self.msg.type == "modify state":
+                print("2")
                 self.sim_state = 1
         if self.sim_state == 0:
+            self.saved = False
             self.t = 0
         elif self.sim_state == 1:
             data = self.msg.data
@@ -72,12 +75,11 @@ class Game(BaseAgent):
                 sep=" ",
             )
             controller_coefficients = np.fromstring(
-                data[: end_locations[1] + 1 : end_locations[2] + 1].strip("[]"),
+                data[end_locations[1] + 1 : end_locations[2] + 1].strip("[]"),
                 count=2,
                 sep=" ",
             )
             g = float(data[end_locations[2] + 1 :])
-
             self.modify_game_state(
                 q_bot=q_bot,
                 quat_des=quat_des,
@@ -87,17 +89,19 @@ class Game(BaseAgent):
             self.sim_state = 2
         elif self.sim_state == 2:
             q_bot, q_ball = self.get_state()  # get actual bot and ball state
-            self.bot.q.update_with_array(state_array=q_bot)  # update bot's state
+            self.bot.q.update_with_array(state_array=q_bot)
             if self.t < 20:
                 self.history.append_many_with_array(
                     t=self.t, q=self.bot.q(), q_m=self.bot.model.q()
                 )  # append gamestate to history
             else:
                 self.saved = self.history.save()
-                print("Ready to plot!")
+                ("Ready to plot!")
                 self.sim_state = 0
             controls = self.bot.step(quat_des=np.asarray(self.quat_des))
+
             self.t += self.dt
+
             return controls
         return SimpleControllerState()
 
@@ -146,7 +150,7 @@ class Game(BaseAgent):
         self.bot.controller.set_constants(
             P_quat=controller_coefficients[0], P_omega=controller_coefficients[1]
         )
-        self.quat_des = quat_des
+        self.quat_des = lau.quat_normalize(quat=quat_des)
         car_state = self.bot.set_state(q=q_bot)
         ball_state = self.ball.set_state()
         game_info_state = GameInfoState(world_gravity_z=g, game_speed=1)

@@ -44,7 +44,7 @@ class Bot:
             physics=Physics(
                 location=Vector3(self.q.x, self.q.y, self.q.z),
                 velocity=Vector3(self.q.x_dot, self.q.y_dot, self.q.z_dot),
-                rotation=Rotator(phi, theta, psi),
+                rotation=Rotator(-theta, -psi, -phi),
                 angular_velocity=Vector3(
                     self.q.phi_dot, self.q.theta_dot, self.q.psi_dot
                 ),
@@ -60,8 +60,8 @@ class Bot:
         controls.roll = tau[0] / 36.07956616966136
         controls.pitch = tau[1] / 12.14599781908070
         controls.yaw = tau[2] / 8.91962804287785
-        controls.roll = np.clip(controls.roll, -1, 1)
-        controls.pitch = np.clip(controls.pitch, -1, 1)
+        controls.roll = -1 * np.clip(controls.roll, -1, 1)
+        controls.pitch = -1 * np.clip(controls.pitch, -1, 1)
         controls.yaw = np.clip(controls.yaw, -1, 1)
         u = np.array([controls.roll, controls.pitch, controls.yaw, 0])
         self.model.step(u=u)

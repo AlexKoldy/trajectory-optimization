@@ -43,6 +43,10 @@ class StateGUI(Ui_Dialog):
             P_quat = float(self.P_quat.text())
             P_omega = float(self.P_omega.text())
             e0, e1, e2, e3 = lau.euler_to_quaternion(phi=phi, theta=theta, psi=psi)
+            print(f"e0: {e0}")
+            print(f"e1: {e1}")
+            print(f"e2: {e2}")
+            print(f"e3: {e3}")
             q_bot = State(
                 x=x,
                 y=y,
@@ -59,12 +63,12 @@ class StateGUI(Ui_Dialog):
                 psi_dot=psi_dot,
             )
             quat_des = np.array([e0_des, e1_des, e2_des, e3_des])
-            controller_coefficients = [P_omega, P_quat]
+            controller_coefficients = np.array([P_quat, P_omega])
             c = Client()
             data = []
             data.append(np.array2string(q_bot()))
             data.append(np.array2string(quat_des))
-            data.append(controller_coefficients)
+            data.append(np.array2string(controller_coefficients))
             data.append(str(g))
             data = "".join(map(str, data))
             c.send_message(CommsProtocol.types["modify state"], data)

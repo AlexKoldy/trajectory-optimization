@@ -180,3 +180,18 @@ class LinAlgUtils:
             quat_0,
         )
         return quat
+
+
+if __name__ == "__main__":
+    e0, e1, e2, e3 = LinAlgUtils.euler_to_quaternion(phi=-1.6, theta=0, psi=0)
+    quat = np.array([e0, e1, e2, e3])
+    quat = LinAlgUtils.quat_normalize(quat=quat)
+    e0 = quat[0]
+    e1 = quat[1]
+    e2 = quat[2]
+    e3 = quat[3]
+    print(f"{e0}, {e1}, {e2}, {e3}")
+    phi, theta, psi = LinAlgUtils.quaternion_to_euler(e0=e0, e1=e1, e2=e2, e3=e3)
+    print(f"{phi}, {theta}, {psi}")
+    e0, e1, e2, e3 = LinAlgUtils.euler_to_quaternion(phi=phi, theta=theta, psi=psi)
+    print(f"{e0}, {e1}, {e2}, {e3}")
