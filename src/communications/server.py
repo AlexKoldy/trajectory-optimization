@@ -50,6 +50,7 @@ class Server(Thread):
                     print("-----------------------------")
                     print("Adding message to queue...")
                     self.msg_queue.put(msg)
+
             except socket.error as error:  # , msg:
                 print("Socket error! %s" % error.strerror)
                 pass

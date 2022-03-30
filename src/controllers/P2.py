@@ -42,5 +42,4 @@ class P2:
         if quat_error[3] < 0:
             quat_error *= -1
         u = -self.P_quat * quat_error[:3] - self.P_omega * omega
-        print(quat_error[:3])
         return u

@@ -26,6 +26,7 @@ from src.communications.server import Server
 from src.communications.client import Client
 from src.utilities.history import History
 from src.utilities.lin_alg_utils import LinAlgUtils as lau
+from src.utilities.utils import convert_data
 
 
 class Game(BaseAgent):
@@ -50,36 +51,17 @@ class Game(BaseAgent):
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         if not self.server.msg_queue.empty():
             try:
-                print("0")
                 self.msg = self.server.msg_queue.get()
             except:
-                print("1")
                 traceback.print_exc()
             if self.msg.type == "modify state":
-                print("2")
                 self.sim_state = 1
         if self.sim_state == 0:
             self.saved = False
             self.t = 0
         elif self.sim_state == 1:
             data = self.msg.data
-            end_locations = [
-                pos for pos, char in enumerate(data) if char == "]"
-            ]  # look for ']' character to determine the end location of stringified list
-            q_bot = np.fromstring(
-                data[: end_locations[0] + 1].strip("[]"), count=13, sep=" "
-            )
-            quat_des = np.fromstring(
-                data[end_locations[0] + 1 : end_locations[1] + 1].strip("[]"),
-                count=4,
-                sep=" ",
-            )
-            controller_coefficients = np.fromstring(
-                data[end_locations[1] + 1 : end_locations[2] + 1].strip("[]"),
-                count=2,
-                sep=" ",
-            )
-            g = float(data[end_locations[2] + 1 :])
+            q_bot, quat_des, controller_coefficients, g = convert_data(data=data)
             self.modify_game_state(
                 q_bot=q_bot,
                 quat_des=quat_des,
@@ -90,6 +72,7 @@ class Game(BaseAgent):
         elif self.sim_state == 2:
             q_bot, q_ball = self.get_state()  # get actual bot and ball state
             self.bot.q.update_with_array(state_array=q_bot)
+            print(q_bot[6:10])
             if self.t < 20:
                 self.history.append_many_with_array(
                     t=self.t, q=self.bot.q(), q_m=self.bot.model.q()
