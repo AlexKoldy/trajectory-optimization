@@ -5,6 +5,7 @@ sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
 import numpy as np
 
 from src.utilities.lin_alg_utils import LinAlgUtils as lau
+from pyquaternion import Quaternion
 
 
 class State:
@@ -72,7 +73,12 @@ class State:
             [state_array[6], state_array[7], state_array[8], state_array[9]]
         )
         quat = lau.quat_normalize(quat)
+
+        quat[0] *= -1
+        quat[1] *= -1
         omega = np.array([state_array[10], state_array[11], state_array[12]])
+
+        omega[2] *= -1
         omega = np.hstack((omega, 0))
         omega = lau.quat_world_to_body(quat_0=quat, quat_1=omega)
 

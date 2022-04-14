@@ -1,6 +1,7 @@
 import numpy as np
+import copy
 
-# TODO: Add class here
+
 class LinAlgUtils:
     @staticmethod
     def euler_to_quaternion(phi: float, theta: float, psi: float) -> list:
@@ -107,10 +108,10 @@ class LinAlgUtils:
         z_1 = quat_1[2]
         w_1 = quat_1[3]
 
-        x_2 = w_0 * x_1 + x_0 * w_1 + y_0 * z_1 - z_0 * y_1
-        y_2 = w_0 * y_1 - x_0 * z_1 + y_0 * w_1 + z_0 * x_1
-        z_2 = w_0 * z_1 + x_0 * y_1 - y_0 * x_1 + z_0 * w_1
         w_2 = w_0 * w_1 - x_0 * x_1 - y_0 * y_1 - z_0 * z_1
+        x_2 = w_0 * x_1 + x_0 * w_1 + y_0 * z_1 - z_0 * y_1
+        y_2 = w_0 * y_1 + y_0 * w_1 + z_0 * x_1 - x_0 * z_1
+        z_2 = w_0 * z_1 + z_0 * w_1 + x_0 * y_1 - y_0 * x_1
 
         quat_2 = np.array([x_2, y_2, z_2, w_2])
 
@@ -125,10 +126,12 @@ class LinAlgUtils:
             quat (np.array): quaternion
 
         Returns:
-            quat (np.array): conjugate quaternion
+            quat_conj (np.array): conjugate quaternion
         """
-        quat[0:3] = -1 * quat[0:3]
-        return quat
+        quat_conj = np.empty((4,))
+        quat_conj[0:3] = -1 * copy.deepcopy(quat[0:3])
+        quat_conj[3] = copy.deepcopy(quat[3])
+        return quat_conj
 
     @staticmethod
     def quat_normalize(quat: np.array) -> np.array:
@@ -139,11 +142,11 @@ class LinAlgUtils:
             quat (np.array): quaternion
 
         Returns:
-            quat (np.array): unit quaternion
+            quat_unit (np.array): unit quaternion
         """
-        quat = quat / np.linalg.norm(quat)
+        quat_unit = quat / np.linalg.norm(quat)
 
-        return quat
+        return quat_unit
 
     @staticmethod
     def quat_body_to_world(quat_0: np.array, quat_1: np.array) -> np.array:
@@ -157,10 +160,10 @@ class LinAlgUtils:
         Returns:
             quat (np.array): unit quaternion
         """
-        quat = LinAlgUtils.quat_multiply(
-            LinAlgUtils.quat_multiply(quat_0, quat_1),
-            LinAlgUtils.quat_conjugate(quat_0),
-        )
+
+        quat_0_conj = LinAlgUtils.quat_conjugate(quat_0)
+        rhs = LinAlgUtils.quat_multiply(quat_1, quat_0_conj)  # right hand side
+        quat = LinAlgUtils.quat_multiply(quat_0, rhs)
         return quat
 
     @staticmethod
@@ -175,23 +178,38 @@ class LinAlgUtils:
         Returns:
             quat (np.array): unit quaternion
         """
-        quat = LinAlgUtils.quat_multiply(
-            LinAlgUtils.quat_multiply(LinAlgUtils.quat_conjugate(quat_0), quat_1),
-            quat_0,
-        )
+        quat_0_conj = LinAlgUtils.quat_conjugate(quat_0)
+        rhs = LinAlgUtils.quat_multiply(quat_0=quat_1, quat_1=quat_0)  # right hand side
+        quat = LinAlgUtils.quat_multiply(quat_0_conj, rhs)
+        return quat
+
+    @staticmethod
+    def quat_rotation_between_two_vectors(vect_0: np.array, vect_1: np.array):
+        """
+        TODO
+        """
+        k_cos_theta = np.dot(vect_0, vect_1)
+        k = (np.linalg.norm(vect_0) ** 2 * np.linalg.norm(vect_1) ** 2) ** (1 / 2)
+        if k_cos_theta / k == -1:
+            R = np.array(
+                [
+                    [np.cos(np.pi / 2), 0, -np.sin(np.pi / 2)],
+                    [0, 1, 0],
+                    [-np.sin(np.pi / 2), 0, np.cos(np.pi / 2)],
+                ]
+            )
+            vect_orth = R @ vect_0
+            print(vect_orth)
+            quat = np.array([vect_orth[0], vect_orth[1], vect_orth[2], 0])
+            return quat
+        vect_cross = np.cross(vect_0, vect_1)
+        quat = np.array([vect_cross[0], vect_cross[1], vect_cross[2], k_cos_theta + k])
+        quat = LinAlgUtils.quat_normalize(quat=quat)
         return quat
 
 
 if __name__ == "__main__":
-    e0, e1, e2, e3 = LinAlgUtils.euler_to_quaternion(phi=-1.6, theta=0, psi=0)
-    quat = np.array([e0, e1, e2, e3])
-    quat = LinAlgUtils.quat_normalize(quat=quat)
-    e0 = quat[0]
-    e1 = quat[1]
-    e2 = quat[2]
-    e3 = quat[3]
-    print(f"{e0}, {e1}, {e2}, {e3}")
-    phi, theta, psi = LinAlgUtils.quaternion_to_euler(e0=e0, e1=e1, e2=e2, e3=e3)
-    print(f"{phi}, {theta}, {psi}")
-    e0, e1, e2, e3 = LinAlgUtils.euler_to_quaternion(phi=phi, theta=theta, psi=psi)
-    print(f"{e0}, {e1}, {e2}, {e3}")
+    u = np.array([1, 0, 0])
+    v = np.array([500, 500, 0])
+    w = LinAlgUtils.quat_rotation_between_two_vectors(u, v)
+    print(LinAlgUtils.quat_normalize(w))

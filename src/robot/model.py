@@ -44,7 +44,7 @@ class Model:
         p = q[:3]  # position of bot in world frame [uu]
         v = q[3:6]  # velocity of bot in world frame [uu/s]
         quat = q[6:10]  # quaternion describing bot's orientation
-        omega = q[10:]  # angular velocity of bot in body frame [rad/s]
+        omega = q[10:]  # angular velocity of bot in world frame [rad/s]
 
         quat = lau.quat_normalize(quat)
         D = np.array(
@@ -60,9 +60,8 @@ class Model:
         quat_dot = (1 / 2) * lau.quat_multiply(quat_0=omega, quat_1=quat)
 
         boost = np.array([u[3], 0, 0, 0])  # boost in pure quaternion form in body frame
-        boost = lau.quat_multiply(
-            quat_0=lau.quat_multiply(quat_0=quat, quat_1=boost),
-            quat_1=lau.quat_conjugate(quat),
+        boost = lau.quat_body_to_world(
+            quat_0=quat, quat_1=boost
         )  # boost in pure quaternion form in world frame
         boost = boost[0:3]
         v_dot = boost + self.g  # acceleration of car in world frame [uu/s^2]

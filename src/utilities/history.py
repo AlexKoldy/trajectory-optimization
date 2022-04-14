@@ -95,6 +95,7 @@ class History:
             theta_dot_m (float): pitch rate of model [rad/s]
             psi_dot_m (float): yaw rate of model [rad/s]
         """
+        # TODO: If (none) append
         self.t_history.append(t)
 
         self.x_history.append(x)
@@ -163,6 +164,36 @@ class History:
         self.phi_dot_m_history.append(q_m[10] * 180 / np.pi)
         self.theta_dot_m_history.append(q_m[11] * 180 / np.pi)
         self.psi_dot_m_history.append(q_m[12] * 180 / np.pi)
+
+        def append_many_trajectory(self, t: float, x: np.array, u: np.array):
+            """
+            Appends optimal path and and inputs
+
+            Args:
+                t (float): time [s]
+                q (np.array): bot's state
+                q_m (np.array): model's state
+            """
+            self.t_history.append(t)
+
+            self.x_history.append(q[0])
+            self.y_history.append(q[1])
+            self.z_history.append(q[2])
+            self.x_dot_history.append(q[3])
+            self.y_dot_history.append(q[4])
+            self.z_dot_history.append(q[5])
+            self.e0_history.append(q[6])
+            self.e1_history.append(q[7])
+            self.e2_history.append(q[8])
+            self.e3_history.append(q[9])
+            self.phi_dot_history.append(q[10] * 180 / np.pi)
+            self.theta_dot_history.append(q[11] * 180 / np.pi)
+            self.psi_dot_history.append(q[12] * 180 / np.pi)
+
+            self.Ux_history.append(u[0])
+            self.Uphi_history.append(u[1])
+            self.Utheta_history.append(u[2])
+            self.Upsi_history.append(u[3])
 
     def save(self):
         """

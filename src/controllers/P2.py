@@ -5,6 +5,7 @@ sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
 import numpy as np
 
 from src.utilities.lin_alg_utils import LinAlgUtils as lau
+from pyquaternion import Quaternion
 
 
 class P2:
@@ -36,8 +37,13 @@ class P2:
             omega (np.array): angular velocity
         """
         quat_des = lau.quat_normalize(quat_des)
+        quat_des[0] *= -1
+        quat_des[1] *= -1
         quat = lau.quat_normalize(quat)
+        print(f"quat_des: {quat_des}")
+        print(f"quat: {quat}")
         quat_conj = lau.quat_conjugate(quat=quat)  # conjugate of measured quaternion
+        print(f"quat_conj: {quat_conj}")
         quat_error = lau.quat_multiply(quat_0=quat_des, quat_1=quat_conj)
         if quat_error[3] < 0:
             quat_error *= -1

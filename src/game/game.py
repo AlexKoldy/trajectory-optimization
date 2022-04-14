@@ -60,6 +60,7 @@ class Game(BaseAgent):
             self.saved = False
             self.t = 0
         elif self.sim_state == 1:
+            self.t = 0
             data = self.msg.data
             q_bot, quat_des, controller_coefficients, g = convert_data(data=data)
             self.modify_game_state(
@@ -71,20 +72,28 @@ class Game(BaseAgent):
             self.sim_state = 2
         elif self.sim_state == 2:
             q_bot, q_ball = self.get_state()  # get actual bot and ball state
+            print(f"position: {q_bot[0:3]}")
+            print(f"velocity: {q_bot[3:6]}")
+            print(f"orientation: {q_bot[6:10]}")
+            quat0 = q_bot[6:10]
+            omega = q_bot[10:]
+            omega = np.hstack((omega, 0))
+            q = lau.quat_world_to_body(quat_0=quat0, quat_1=omega)
+            print(f"angular velocity (body): {q[:3]}")
+            print(f"angular velocity (world): {omega[:3]}")
+            # print(f"state: {q_bot[6:10]}")
             self.bot.q.update_with_array(state_array=q_bot)
-            print(q_bot[6:10])
             if self.t < 20:
                 self.history.append_many_with_array(
                     t=self.t, q=self.bot.q(), q_m=self.bot.model.q()
                 )  # append gamestate to history
             else:
                 self.saved = self.history.save()
-                ("Ready to plot!")
+                print("Ready to plot!")
                 self.sim_state = 0
-            controls = self.bot.step(quat_des=np.asarray(self.quat_des))
-
+            controls = self.bot.step(quat_des=self.quat_des)
+            # controls = SimpleControllerState()
             self.t += self.dt
-
             return controls
         return SimpleControllerState()
 
@@ -130,10 +139,10 @@ class Game(BaseAgent):
             q_bot (np.array): new bot state to set
         """
         # TODO: MAKE THIS FUNCTIONS ARGS CLEANER; EDIT DOCUMENTATION
-        self.bot.controller.set_constants(
+        self.bot.p2.set_constants(
             P_quat=controller_coefficients[0], P_omega=controller_coefficients[1]
         )
-        self.quat_des = lau.quat_normalize(quat=quat_des)
+        self.quat_des = quat_des
         car_state = self.bot.set_state(q=q_bot)
         ball_state = self.ball.set_state()
         game_info_state = GameInfoState(world_gravity_z=g, game_speed=1)
