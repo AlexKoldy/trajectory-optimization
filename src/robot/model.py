@@ -4,6 +4,8 @@ sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
 
 import numpy as np
 
+# import casadi
+
 from src.robot.state import State
 from src.utilities.lin_alg_utils import LinAlgUtils as lau
 from src.utilities.integrators import get_integrator
@@ -56,7 +58,9 @@ class Model:
             dtype=np.float32,
         )
         omega_dot = self.T @ u[:3] + D @ omega  # angular acceleration [rad/s^2]
-        omega = np.hstack((omega, 0))  # convert angular velocity to vector of size 4
+        omega = np.concatenate(
+            (omega, np.array([0])), axis=0
+        )  # convert angular velocity to vector of size 4
         quat_dot = (1 / 2) * lau.quat_multiply(quat_0=omega, quat_1=quat)
 
         boost = np.array([u[3], 0, 0, 0])  # boost in pure quaternion form in body frame
@@ -111,4 +115,5 @@ if __name__ == "__main__":
     u = np.array([0, 0.1, 0, 992])
     while t < 5:
         model.step(u)
+        print(model.q())
         t += 1 / 120

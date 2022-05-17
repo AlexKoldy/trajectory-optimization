@@ -57,7 +57,6 @@ class LinAlgUtils:
         t3 = +2.0 * (e3 * e2 + e0 * e1)
         t4 = +1.0 - 2.0 * (e1 * e1 + e2 * e2)
         psi = np.arctan2(t3, t4)
-
         return [phi, theta, psi]
 
     @staticmethod
@@ -160,7 +159,6 @@ class LinAlgUtils:
         Returns:
             quat (np.array): unit quaternion
         """
-
         quat_0_conj = LinAlgUtils.quat_conjugate(quat_0)
         rhs = LinAlgUtils.quat_multiply(quat_1, quat_0_conj)  # right hand side
         quat = LinAlgUtils.quat_multiply(quat_0, rhs)
@@ -209,7 +207,10 @@ class LinAlgUtils:
 
 
 if __name__ == "__main__":
-    u = np.array([1, 0, 0])
-    v = np.array([500, 500, 0])
-    w = LinAlgUtils.quat_rotation_between_two_vectors(u, v)
-    print(LinAlgUtils.quat_normalize(w))
+    # u = np.array([1, 0, 0])
+    # v = np.array([500, 500, 0])
+    # w = LinAlgUtils.quat_rotation_between_two_vectors(u, v)
+    # print(LinAlgUtils.quat_normalize(w))
+    q1 = [0.707, 0, 0, 0.707]
+    q2 = [-0.707, 0, 0, 0.707]
+    print(LinAlgUtils.quat_multiply(q1, q2))

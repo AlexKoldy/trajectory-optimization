@@ -89,23 +89,23 @@ class Server(Thread):
         return Decoder.decode(data)
 
 
-if __name__ == "__main__":
-    """Testing the Server process and queue"""
-    try:
-        s = Server(
-            CommsProtocol.SERVER, CommsProtocol.PORT
-        )  # Instantiate server class (which starts the process)
-        while True:
-            try:
-                """Print whatever messages are in the queue"""
-                msg = s.msg_queue.get()
-                print("Message from queue:------------------")
-                print(msg.type, msg.data)
-                print("--------------------")
+# if __name__ == "__main__":
+#     """Testing the Server process and queue"""
+#     try:
+#         s = Server(
+#             CommsProtocol.SERVER, CommsProtocol.PORT
+#         )  # Instantiate server class (which starts the process)
+#         while True:
+#             try:
+#                 """Print whatever messages are in the queue"""
+#                 msg = s.msg_queue.get()
+#                 print("Message from queue:------------------")
+#                 print(msg.type, msg.data)
+#                 print("--------------------")
 
-            except:
-                traceback.print_exc()
-                break
-    except KeyboardInterrupt:
-        print("Exiting...")
-        s.terminate()
+#             except:
+#                 traceback.print_exc()
+#                 break
+#     except KeyboardInterrupt:
+#         print("Exiting...")
+#         s.terminate()

@@ -61,7 +61,7 @@ sol = opti.solve()
 
 scatter(t * sol.value(T), sol.value(X[0, :]), label="pos traj")
 scatter(t * sol.value(T), sol.value(X[1, :]), label="vel traj")
-
+legend()
 show()
 
 """

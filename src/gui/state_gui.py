@@ -43,10 +43,6 @@ class StateGUI(Ui_Dialog):
             P_quat = float(self.P_quat.text())
             P_omega = float(self.P_omega.text())
             e0, e1, e2, e3 = lau.euler_to_quaternion(phi=phi, theta=theta, psi=psi)
-            print(f"e0: {e0}")
-            print(f"e1: {e1}")
-            print(f"e2: {e2}")
-            print(f"e3: {e3}")
             q_bot = State(
                 x=x,
                 y=y,

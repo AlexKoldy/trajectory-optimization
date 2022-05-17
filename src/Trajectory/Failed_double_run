@@ -1,0 +1,324 @@
+from casadi import *
+import matplotlib.pyplot as plt
+
+# from pylab import plot, step, figure, legend, show, spy, quiver, scatter
+
+
+class TrajectoryOptimizer:
+    def __init__(self):
+        self.opti = Opti()  # optimizer
+        self.opti_g = Opti()  # optimizer
+
+        # Initial Conditions
+        # Bot
+        self.t_i = 0  # initial time [s]
+        self.y_i = -1000  # initial y-position [uu]
+        self.z_i = 0  # initial z-position [uu]
+        self.y_dot_i = 0  # initial y-velocity [uu/s]
+        self.z_dot_i = 0  # initial z-velocity [uu/s]
+        self.theta_i = np.pi / 2  # initial pitch [rad]
+        # self.e0_i = 0.00001  # initial x component of orientation quaternion
+        # self.e1_i = 0.00001  # initial y component of orientation quaternion
+        # self.e2_i = 0.00001  # initial z component of orientation quaternion
+        # self.e3_i = 1  # initial w component of orientation quaternion
+        self.theta_dot_i = 0  # initial pitch rate [rad/s]
+
+        # Enviornment
+        self.g = -650  # acceleration due to gravity [uu/s^2]
+
+        # Ball
+        self.y_b_i = 1000  # initial y-position [uu]
+        self.z_b_i = 250  # initial z-position [uu]
+        self.y_b_dot_i = -200  # initial y-velocity [uu/s]
+        self.z_b_dot_i = 1000  # initial z-velocity [uu/s]
+        self.theta_b_i = 0  # initial pitch [rad]
+        self.theta_dot_b_i = 0  # initial pitch rate [rad/s]
+
+        # Final Conditions
+        # Bot
+        # self.y_f = 1000  # desired final y-position [uu]
+        # self.z_f = 500  # desired final z-position [uu]
+        # self.y_dot_f = 0  # desired final y-velocity [uu/s]
+        # self.z_dot_f = 0  # desired final z-velocity [uu/s]
+        self.theta_f = -np.pi / 4  # final desired pitch rate [rad/s]
+        # self.theta_dot_f = 0  # final desired pitch rate [rad/s]
+
+        # Max Values
+        self.v_max = 2300  # maxium velocity [uu/s]
+        self.omega_max = 5.5  # maximum angular velocity [rad/s]
+        self.theta_ddot_max = 12.46  # maximum pitch acceleration [rad/s]
+        self.boost_max = 915.666  # maximum boost acceleration [rad/s]
+        self.throttle_max = 66.67  # maximum throttle acceleration [uu/s^2]
+
+        self.v_b_max = 6000  # Maxium velocity [uu/s]
+
+        # solver tuning variables
+        self.n = 50  # number of timesteps
+        # self.pos_cf_w = 1e2  # weight of the error of position(1e-2 seems to work well)
+        # self.col_cf_w = 1e0  # weight of the error of position(1e-2 seems to work well)
+
+        """
+        self.c = ((self.y_i - self.y_b_i) ** 2 + (self.z_i - self.z_b_i) ** 2) ** 0.5
+        self.d = (
+            (self.y_dot_i - self.y_b_dot_i) ** 2 + (self.z_dot_i - self.z_b_dot_i) ** 2
+        )
+        # self.a = ((self.boost_max - self.g) ** 2 + self.g**2) ** 0.5
+        self.a = self.boost_max
+        self.guess_factor = -0.9
+        self.t_f = (
+            self.guess_factor
+            * (-self.d - (self.d**2 - 4 * self.a * self.c) ** 0.5)
+            / (2 * self.a)
+        )  # guess of the final time[s]
+        """
+
+        # dimensions
+        self.radius_b = 92.75  # ball radius [uu]
+        self.radius_r = (
+            120 / 2
+        )  # robot radius [uu] https://onedrive.live.com/view.aspx?resid=F0182A0BAEBB5DFF!14583&ithint=file%2cxlsx&app=Excel&authkey=!ALu0cMkDZDoWOws
+
+        self.q_g = self.opti_g.variable(4, self.n + 1)  # state of bot
+        self.b_g = self.opti_g.variable(4, self.n + 1)  # state of ball
+        self.u_g = self.opti_g.variable(2, self.n)  # inputs(ay, az)
+        self.t_g = self.opti_g.variable()  # time
+        self.dt_g = self.t_g / self.n
+        self.time_g = np.linspace(0, 1, self.n + 1)
+        self.time_u_g = np.linspace(0, 1, self.n)
+        self.set_constraints_g()
+        self.guess2_g()
+        self.integrate_rk42_g()
+        self.opti_g.solver("ipopt")
+        self.sol_g = self.opti_g.solve()
+        # print(self.opti_g.debug.show_infeasibilities())
+        self.t_f = self.sol_g.value(self.t_g[-1])
+
+    def set_constraints_g(self):
+        """
+        Sets optimizer constraints
+        """
+        # Time
+        self.opti_g.subject_to(self.t_g >= 0.1)
+
+        # Initial Conditions of the bot
+        # self.opti_g.set_initial(self.t_g, 2)
+        self.opti_g.subject_to(self.q_g[0, 0] == self.y_i)  # initial y-position
+        self.opti_g.subject_to(self.q_g[1, 0] == self.z_i)  # initial z-position
+        self.opti_g.subject_to(self.q_g[2, 0] == self.y_dot_i)  # initial y-velocity
+        self.opti_g.subject_to(self.q_g[3, 0] == self.z_dot_i)  # initial z-velocity
+
+        # Initial Conditions of the ball
+        self.opti_g.subject_to(self.b_g[0, 0] == self.y_b_i)  # initial y-position
+        self.opti_g.subject_to(self.b_g[1, 0] == self.z_b_i)  # initial z-position
+        self.opti_g.subject_to(self.b_g[2, 0] == self.y_b_dot_i)  # initial y-velocity
+        self.opti_g.subject_to(self.b_g[3, 0] == self.z_b_dot_i)  # initial z-velocity
+
+        # Final Conditions
+        """
+        self.pos_cf_g = self.pos_cf_w * (
+            (self.q_g[0, -1] - self.b_g[0, -1]) ** 2
+            + (self.q_g[1, -1] - self.b_g[1, -1]) ** 2
+        )  # cost function assocaited with distance between
+        """
+        # self.pos_cf = self.pos_cf_w * ((self.q[0, -1] - self.b[0, -1]) ** 2 + (self.q[1, -1] - self.b[1, -1]) ** 2)
+        # self.opti_g.minimize(self.t_g + self.pos_cf_g)
+        self.opti_g.minimize(self.t_g)
+        self.opti_g.subject_to(self.q_g[0, -1] == self.b_g[0, -1])
+        self.opti_g.subject_to(self.q_g[1, -1] == self.b_g[1, -1])
+        # Control Inputs
+
+        self.u_mag = self.opti_g.variable(1, self.n + 1)
+        for i in range(self.n):
+            self.opti_g.subject_to(
+                self.u_mag[0, i] == self.u_g[0, i] ** 2 + self.u_g[1, i] ** 2
+            )
+            self.opti_g.subject_to(
+                self.opti_g.bounded(0, self.u_mag[0, i], self.boost_max**2)
+            )  # boost acceleration
+
+        # self.opti_g.subject_to(self.opti_g.bounded(-500, self.u_g[0], 500))
+        # self.opti_g.subject_to(self.opti_g.bounded(-500, self.u_g[1], 500))
+
+        self.opti_g.subject_to(
+            self.opti_g.bounded(-self.v_max, self.q_g[2:4, :], self.v_max)
+        )
+        self.opti_g.subject_to(
+            self.opti_g.bounded(-self.v_b_max, self.b_g[2:4, :], self.v_b_max)
+        )
+
+    def guess2_g(self):
+        """
+        TODO
+        """
+        self.t_f = 10  # guess of the final time[s]
+        self.y_b_f = self.y_b_i + self.y_b_dot_i * self.t_f
+        self.z_b_f = (
+            self.y_b_i
+            + self.y_b_dot_i * self.t_f
+            + self.z_b_i
+            + self.z_b_dot_i * self.t_f
+            + 0.5 * self.g * self.t_f**2
+        )
+
+        for i in range(self.n + 1):
+            self.opti_g.set_initial(
+                self.q_g[0, i], fabs(self.y_b_f - self.y_i) / (self.n + 1 - i)
+            )  # y-position guess
+            self.opti_g.set_initial(
+                self.q_g[1, i], fabs(self.z_b_f - self.z_i) / (self.n + 1 - i)
+            )  # z-position guess
+
+    def q_dot_g(self, q_g, u_g):
+        p_g = q_g[:2]  # position of the bot in the yz world plane
+        v_g = q_g[2:4]  # velocity of the bot in the yz world plane
+
+        # v_dot = vertcat(acos(theta) * u[0], asin(theta) * u[0])
+        v_dot_g = vertcat(u_g[0], u_g[1] + self.g)
+
+        q_dot_g = vertcat(
+            v_g[0],
+            v_g[1],
+            v_dot_g[0],
+            v_dot_g[1],
+        )
+        return q_dot_g
+
+    def b_dot_g(self, b):
+        p_b = b[:2]  # position of the ball
+        v_b = b[2:4]  # velocity of the ball
+
+        v_dot_b = vertcat(0, self.g)  # ball velocity in z coordinate
+
+        b_dot = vertcat(v_b[0], v_b[1], v_dot_b[0], v_dot_b[1])
+        return b_dot
+
+    def integrate_rk42_g(self):
+        for k in range(self.n):  # loop over control intervals
+            # Runge-Kutta 4 integration
+            k1 = self.q_dot_g(self.q_g[:, k], self.u_g[:, k])
+            k2 = self.q_dot_g(self.q_g[:, k] + self.dt_g * 0.5 * k1, self.u_g[:, k])
+            k3 = self.q_dot_g(self.q_g[:, k] + self.dt_g * 0.5 * k2, self.u_g[:, k])
+            k4 = self.q_dot_g(self.q_g[:, k] + self.dt_g * k3, self.u_g[:, k])
+            x_next_q = self.q_g[:, k] + self.dt_g / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+            self.opti_g.subject_to(self.q_g[:, k + 1] == x_next_q)
+
+            k1_b = self.b_dot_g(self.b_g[:, k])
+            k2_b = self.b_dot_g(self.b_g[:, k] + self.dt_g * 0.5 * k1_b)
+            k3_b = self.b_dot_g(self.b_g[:, k] + self.dt_g * 0.5 * k2_b)
+            k4_b = self.b_dot_g(self.b_g[:, k] + self.dt_g * k3_b)
+            x_next_b = self.b_g[:, k] + self.dt_g / 6 * (
+                k1_b + 2 * k2_b + 2 * k3_b + k4_b
+            )
+            self.opti_g.subject_to(self.b_g[:, k + 1] == x_next_b)
+
+
+if __name__ == "__main__":
+    to = TrajectoryOptimizer()
+    to.q_dot_g(to.q_g[:, 0], to.u_g[:, 0])
+
+    print(to.sol_g.value(to.t_g))
+    # look into variable scaling
+
+    plt.figure()
+    plt.plot(
+        to.sol_g.value(to.b_g[0, :]),
+        to.sol_g.value(to.b_g[1, :]),
+        label="ball y vs z",
+    )
+
+    plt.plot(
+        to.sol_g.value(to.q_g[0, :]),
+        to.sol_g.value(to.q_g[1, :]),
+        label="bot y vs z",
+    )
+    plt.legend()
+    plt.show()
+
+    '''
+    plt.figure()
+    plt.plot(
+        to.time_g * to.sol.value(to.t), to.sol.value(to.q[0, :]), label="bot y position"
+    )
+    plt.plot(
+        to.time * to.sol.value(to.t), to.sol.value(to.q[1, :]), label="bot z position"
+    )
+    plt.legend()
+
+    plt.figure()
+    plt.plot(
+        to.time * to.sol.value(to.t), to.sol.value(to.q[2, :]), label="bot y velocity"
+    )
+    plt.plot(
+        to.time * to.sol.value(to.t), to.sol.value(to.q[3, :]), label="bot z velocity"
+    )
+    plt.legend()
+    """
+    plt.figure()
+    plt.plot(
+        to.time * to.sol.value(to.t), to.sol.value(to.b[0, :]), label="ball y position"
+    )
+    plt.plot(
+        to.time * to.sol.value(to.t), to.sol.value(to.b[1, :]), label="ball z position"
+    )
+    plt.legend()
+
+    plt.figure()
+    plt.plot(
+        to.time * to.sol.value(to.t), to.sol.value(to.b[2, :]), label="ball y velocity"
+    )
+    plt.plot(
+        to.time * to.sol.value(to.t), to.sol.value(to.b[3, :]), label="ball z velocity"
+    )
+    plt.legend()
+    """
+    plt.figure()
+    plt.plot(to.time_u * to.sol.value(to.t), to.sol.value(to.u[0, :]), label="boost")
+    plt.legend()
+
+    plt.figure()
+    plt.plot(
+        to.time_u * to.sol.value(to.t),
+        to.sol.value(to.u[1, :]),
+        label="angle acceleration input",
+    )
+    plt.legend()
+
+    plt.figure()
+    plt.plot(
+        to.time * to.sol.value(to.t),
+        to.sol.value(to.q[4, :]) * 180 / np.pi,
+        label="theta",
+    )
+    plt.legend()
+
+    plt.figure()
+    plt.plot(
+        to.sol.value(to.b[0, :]),
+        to.sol.value(to.b[1, :]),
+        label="ball y vs z",
+    )
+
+    plt.plot(
+        to.sol.value(to.q[0, :]),
+        to.sol.value(to.q[1, :]),
+        label="bot y vs z",
+    )
+
+    print(to.sol.value(to.t_f))
+    print(to.t_f)
+
+    plt.figure()
+    plt.plot(
+        to.sol.value(to.b[0, :]),
+        to.sol.value(to.b[1, :]),
+        label="ball y vs z",
+    )
+
+    plt.plot(
+        to.sol.value(to.q[0, :]),
+        to.sol.value(to.q[1, :]),
+        label="bot y vs z",
+    )
+    plt.legend()
+    plt.show()
+    '''

@@ -73,13 +73,9 @@ class State:
             [state_array[6], state_array[7], state_array[8], state_array[9]]
         )
         quat = lau.quat_normalize(quat)
-
-        quat[0] *= -1
-        quat[1] *= -1
         omega = np.array([state_array[10], state_array[11], state_array[12]])
-
-        omega[2] *= -1
         omega = np.hstack((omega, 0))
+        omega[2] *= -1
         omega = lau.quat_world_to_body(quat_0=quat, quat_1=omega)
 
         self.x = state_array[0]
@@ -96,8 +92,9 @@ class State:
         self.theta_dot = omega[1]
         self.psi_dot = omega[2]
 
-    def quaternion(self):
-        """
-        # TODO
-        """
-        return np.array([self.e0, self.e1, self.e2, self.e3])
+
+if __name__ == "__main__":
+    q = State()
+    b = DM(q())
+    b[1:3] = b[5:7]
+    print(b[2:6])

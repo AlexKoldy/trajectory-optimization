@@ -5,10 +5,9 @@ sys.path.append("C:/Users/Student/Documents/RLBot_IS/trajectory-optimization")
 import numpy as np
 
 from src.utilities.lin_alg_utils import LinAlgUtils as lau
-from pyquaternion import Quaternion
 
 
-class P2:
+class P2Cascade:
     def __init__(self, dt: float, P_quat: float = 0, P_omega: float = 0):
         self.dt = dt  # timestep [s]
         self.P_quat = P_quat
@@ -43,7 +42,7 @@ class P2:
         print(f"Quaternion Error: {quat_error}")
         if quat_error[3] < 0:
             quat_error *= -1
-        omega_des = np.zeros((3,))
+        omega_des = -self.P_quat * quat_error[:3]
         omega_error = omega_des - omega
-        u = self.P_quat * quat_error[:3] - self.P_omega * omega_error
+        u = -self.P_omega * omega_error
         return u

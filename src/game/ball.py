@@ -14,5 +14,10 @@ class Ball:
         """
         Sets the ball's state
         """
-        ball_state = BallState(Physics(location=Vector3(0, 0, None)))
+        ball_state = BallState(
+            Physics(
+                location=Vector3(0, 1500, 1000),
+                velocity=Vector3(0, -750, 1000),
+            )
+        )
         return ball_state
